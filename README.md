@@ -132,7 +132,7 @@ pub fn process_initialize(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramR
     let [signer] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
-    load_signer(signer);
+    load_signer(signer)?;
 
     // Return ok
     Ok(())
