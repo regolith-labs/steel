@@ -1,0 +1,21 @@
+[package]
+name = "ore-utils"
+description = "Utils for building ORE programs"
+version = "2.1.9"
+edition = "2021"
+license = "Apache-2.0"
+homepage = "https://ore.supply"
+documentation = "https://ore.supply"
+repository = "https://github.com/regolith-labs/ore-utils"
+keywords = ["solana"]
+
+[features]
+deafult = []
+spl = ["spl-token", "spl-associated-token-account"]
+
+[dependencies]
+bytemuck = "1.14.3"
+solana-program = "^1.18"
+spl-token = { version = "^4", features = ["no-entrypoint"] }
+spl-associated-token-account = { version = "^2.3", features = [ "no-entrypoint" ] } 
+
