@@ -1,0 +1,16 @@
+[package]
+name = "example-0-api"
+description = "API for interacting with example program 0"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+keywords.workspace = true
+
+[dependencies]
+bytemuck.workspace = true
+num_enum.workspace = true
+solana-program.workspace = true
+steel.workspace = true
