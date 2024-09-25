@@ -1,6 +1,6 @@
 # Steel
 
-**Steel is a minimal framework for Solana smart contract development.** It provides of a set of helper functions, macros, and code patterns for scaffolding smart contracts. It is generally designed to be unopinionated, minimizing boilerplate and maximizing flexibility.
+**Steel is a modular framework for Solana smart contract development.** It provides of a set of helper functions, macros, and code patterns for scaffolding smart contracts. Steel is generally designed to be unopinionated, minimizing boilerplate and maximizing flexibility.
 
 ## Notes
 
@@ -121,6 +121,32 @@ event!(MyEvent);
 ## Program
 
 In your instruction implementations, Steel offers helper functions for validating common types of accounts and executing CPIs. 
+
+### Entrypoint
+
+```rs
+mod initialize;
+
+use example_0_api::instruction::MyInstruction;
+use initialize::*;
+use steel::*;
+
+entrypoint!(process_instruction);
+
+pub fn process_instruction(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    data: &[u8],
+) -> ProgramResult {
+    let (ix, data) = parse_instruction::<MyInstruction>(example_0_api::id(), program_id, data)?;
+
+    match ix {
+        MyInstruction::Initialize => process_initialize(accounts, data)?,
+    }
+
+    Ok(())
+}
+```
 
 ### Loaders
 
