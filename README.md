@@ -5,7 +5,7 @@
 ## Notes
 
 - This codebase is under active development. All interfaces are subject to change.
-- There is currently no CLI, scaffolding script, or custom localnet toolchain.
+- There is currently no CLI, init script, or custom localnet toolchain.
 - Use `solana build-sbf` to build your programs.
 - The account "loaders" currently do not yet return readable or mutable account references.
 - The API macros currently do not support IDL generation.
