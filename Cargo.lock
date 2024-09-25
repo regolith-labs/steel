@@ -2029,9 +2029,11 @@ name = "steel"
 version = "0.1.2"
 dependencies = [
  "bytemuck",
+ "num_enum",
  "solana-program",
  "spl-associated-token-account",
  "spl-token",
+ "thiserror",
 ]
 
 [[package]]

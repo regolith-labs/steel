@@ -16,7 +16,9 @@ spl = ["spl-token", "spl-associated-token-account"]
 
 [dependencies]
 bytemuck.workspace = true
+num_enum.workspace = true
 solana-program.workspace = true
 spl-token = { workspace = true, optional = true }
 spl-associated-token-account = { workspace = true, optional = true }
+thiserror.workspace = true
 
