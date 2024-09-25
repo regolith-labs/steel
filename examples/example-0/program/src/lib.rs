@@ -1,3 +1,4 @@
+mod context;
 mod initialize;
 
 use example_0_api::instruction::MyInstruction;

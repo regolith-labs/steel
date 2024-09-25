@@ -15,7 +15,8 @@ keywords = ["solana"]
 bytemuck = "1.14.3"
 num_enum = "0.7.2"
 example-0-api = { path = "./api" }
-solana-program = "^1.18"
-spl-token = { version = "^4", features = ["no-entrypoint"] }
-spl-associated-token-account = { version = "^2.3", features = [ "no-entrypoint" ] } 
+solana-program = "2.0.7"
+spl-token = { version = "6.0.0", features = ["no-entrypoint"] }
+spl-token-2022 = { version = "5.0.2", features = ["no-entrypoint"] }
+spl-associated-token-account = { version = "4.0.0", features = [ "no-entrypoint" ] } 
 steel = { path = "../../lib" }

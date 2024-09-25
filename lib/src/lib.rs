@@ -1,11 +1,11 @@
 mod cpi;
-mod loaders;
+mod checkers;
 pub mod macros;
 mod traits;
 mod utils;
 
 pub use cpi::*;
-pub use loaders::*;
+pub use checkers::*;
 pub use traits::*;
 pub use utils::*;
 

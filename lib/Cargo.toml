@@ -11,14 +11,14 @@ repository.workspace = true
 keywords.workspace = true
 
 [features]
-deafult = []
-spl = ["spl-token", "spl-associated-token-account"]
+default = []
 
 [dependencies]
 bytemuck.workspace = true
 num_enum.workspace = true
 solana-program.workspace = true
-spl-token = { workspace = true, optional = true }
-spl-associated-token-account = { workspace = true, optional = true }
+spl-token.workspace = true
+spl-token-2022.workspace = true
+spl-associated-token-account.workspace = true
 thiserror.workspace = true
 
