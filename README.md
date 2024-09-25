@@ -1,11 +1,12 @@
 # Steel
 
-**Steel is a lightweight framework for building smart contracts on Solana.** It provides of a set of helper functions, macros, and code patterns for organizing cotract codebases. Steel is generally designed to be unopinionated, removing common boilerplate and leaving as much flexibility as possible.
+**Steel is a minimal framework for Solana smart contract development.** It provides of a set of helper functions, macros, and code patterns for scaffolding smart contracts. It is generally designed to be unopinionated, minimizing boilerplate and maximizing flexibility.
 
 ## Notes
 
-- This codebase is under active development. All interfaces are subject to change. 
-- There is currently no CLI or custom localnet toolchain. Build your programs with `solana build-sbf`.
+- This codebase is under active development. All interfaces are subject to change.
+- There is currently no CLI, init script, or custom localnet toolchain.
+- Use `solana build-sbf` to build your programs.
 - The account "loaders" currently do not yet return readable or mutable account references.
 - The API macros currently do not support IDL generation.
 
@@ -126,7 +127,6 @@ In your instruction implementations, Steel offers helper functions for validatin
 ```rs
 use steel::*;
 
-/// Initialize ...
 pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
     // Load accounts.
     let [signer] = accounts else {
