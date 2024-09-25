@@ -12,7 +12,7 @@
 
 ## File structure
 
-While not strictly enforced, we recommend organizing your Solana program with the following file structure. We have found this pattern improves code readability, separating the contract interface from its implementation, and scales well for more complex contracts. 
+While not strictly enforced, we recommend organizing your Solana program with the following file structure. We have found this pattern improves code readability, separating the contract interface from its implementation, and scales well as contract complexity increases. 
 
 ```
 Cargo.toml (workspace)
