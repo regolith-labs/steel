@@ -1,10 +1,5 @@
-#[allow(dead_code)]
-
 use solana_program::{
-    account_info::AccountInfo,
-    program_error::ProgramError,
-    program_pack::Pack,
-    pubkey::Pubkey,
+    account_info::AccountInfo, program_error::ProgramError, program_pack::Pack, pubkey::Pubkey,
 };
 use spl_token::state::Mint;
 use spl_token_2022::check_spl_token_program_account;
