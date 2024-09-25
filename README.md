@@ -124,10 +124,10 @@ In your instruction implementations, Steel offers helper functions for validatin
 ### Loaders
 
 ```rs
-use example_0_api::instruction::*;
 use steel::*;
 
-pub fn process_initialize(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramResult {
+/// Initialize ...
+pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
     // Load accounts.
     let [signer] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
@@ -142,7 +142,6 @@ pub fn process_initialize(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramR
 ### CPIs
 
 ```rs
-use example_2_api::instruction::*;
 use steel::*;
 
 pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramResult {
