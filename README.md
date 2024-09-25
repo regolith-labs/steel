@@ -47,12 +47,14 @@ Steel offers a collection of simple macros for defining your contract API and th
 ```rs
 use steel::*;
 
+/// Enum for account discriminators.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, IntoPrimitive, TryFromPrimitive)]
 pub enum MyAccount {
     Counter = 0,
 }
 
+/// Struct for account state.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
 pub struct Counter {
@@ -67,12 +69,14 @@ account!(MyAccount, Bus);
 ```rs
 use steel::*;
 
+/// Enum for instruction discriminators.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, TryFromPrimitive)]
 pub enum MyInstruction {
     Update = 0,
 }
 
+/// Struct for instruction args.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct Increment {
@@ -87,6 +91,7 @@ instruction!(MyInstruction, Increment);
 ```rs
 use steel::*;
 
+/// Enum for error types.
 #[repr(u32)]
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq, IntoPrimitive)]
 pub enum MyError {
@@ -102,6 +107,7 @@ error!(MyError);
 ```rs
 use steel::*;
 
+/// Struct for logged events.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
 pub struct MyEvent {
@@ -153,7 +159,7 @@ pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> Program
     };
     load_signer(signer)?;
 
-    // Return ok
+    // Return.
     Ok(())
 }
 ```
@@ -184,6 +190,7 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
         amount,
     )?;
 
+    // Return
     Ok(())
 }
 ```
