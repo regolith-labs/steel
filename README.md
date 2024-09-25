@@ -1,6 +1,6 @@
 # Steel
 
-**Steel is a flexible framework for building smart contracts on Solana.** It provides of a set of helper functions, macros, and code patterns for organizing contract codebases. Steel is generally designed to be an unopinionated toolkit, reducing boilerplate and providing maximal flexibility.
+**Steel is a minimal framework for Solana smart contract development.** It provides of a set of helper functions, macros, and code patterns for organizing contract codebases. It is generally designed to be an unopinionated toolkit, reducing boilerplate and maximizing flexibility.
 
 ## Notes
 
