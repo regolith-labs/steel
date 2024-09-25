@@ -1,6 +1,6 @@
 # Steel
 
-**Steel is a minimal framework for Solana smart contract development.** It provides of a set of helper functions, macros, and code patterns for scaffolding smart contracts. It is generally designed to be unopinionated, minimizing boilerplate and maximizing flexibility.
+**Steel is a modular framework for Solana smart contract development.** It provides of a set of helper functions, macros, and code patterns for scaffolding smart contracts. Steel is generally designed to be unopinionated, minimizing boilerplate and maximizing flexibility.
 
 ## Notes
 
@@ -45,16 +45,16 @@ Steel offers a collection of simple macros for defining your contract API and th
 ### Accounts
 
 ```rs
-use bytemuck::{Pod, Zeroable};
-use num_enum::{IntoPrimitive, TryFromPrimitive};
 use steel::*;
 
+/// Enum for account discriminators.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, IntoPrimitive, TryFromPrimitive)]
 pub enum MyAccount {
     Counter = 0,
 }
 
+/// Struct for account state.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
 pub struct Counter {
@@ -67,16 +67,16 @@ account!(MyAccount, Bus);
 ### Instructions
 
 ```rs
-use bytemuck::{Pod, Zeroable};
-use num_enum::TryFromPrimitive;
 use steel::*;
 
+/// Enum for instruction discriminators.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, TryFromPrimitive)]
 pub enum MyInstruction {
     Update = 0,
 }
 
+/// Struct for instruction args.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct Increment {
@@ -89,12 +89,11 @@ instruction!(MyInstruction, Increment);
 ### Errors
 
 ```rs
-use num_enum::IntoPrimitive;
 use steel::*;
-use thiserror::Error;
 
-#[derive(Debug, Error, Clone, Copy, PartialEq, Eq, IntoPrimitive)]
+/// Enum for error types.
 #[repr(u32)]
+#[derive(Debug, Error, Clone, Copy, PartialEq, Eq, IntoPrimitive)]
 pub enum MyError {
     #[error("You did something wrong")]
     Dummy = 0,
@@ -106,9 +105,9 @@ error!(MyError);
 ### Events
 
 ```rs
-use bytemuck::{Pod, Zeroable};
 use steel::*;
 
+/// Struct for logged events.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
 pub struct MyEvent {
@@ -122,6 +121,32 @@ event!(MyEvent);
 
 In your instruction implementations, Steel offers helper functions for validating common types of accounts and executing CPIs. 
 
+### Entrypoint
+
+```rs
+mod initialize;
+
+use example_0_api::instruction::MyInstruction;
+use initialize::*;
+use steel::*;
+
+entrypoint!(process_instruction);
+
+pub fn process_instruction(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    data: &[u8],
+) -> ProgramResult {
+    let (ix, data) = parse_instruction::<MyInstruction>(example_0_api::id(), program_id, data)?;
+
+    match ix {
+        MyInstruction::Initialize => process_initialize(accounts, data)?,
+    }
+
+    Ok(())
+}
+```
+
 ### Loaders
 
 ```rs
@@ -134,7 +159,7 @@ pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> Program
     };
     load_signer(signer)?;
 
-    // Return ok
+    // Return.
     Ok(())
 }
 ```
@@ -165,6 +190,7 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
         amount,
     )?;
 
+    // Return
     Ok(())
 }
 ```
