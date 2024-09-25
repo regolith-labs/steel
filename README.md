@@ -61,7 +61,7 @@ pub struct Counter {
     pub value: u64,
 }
 
-account!(MyAccount, Bus);
+account!(MyAccount, Counter);
 ```
 
 ### Instructions
