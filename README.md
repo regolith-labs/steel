@@ -45,8 +45,6 @@ Steel offers a collection of simple macros for defining your contract API and th
 ### Accounts
 
 ```rs
-use bytemuck::{Pod, Zeroable};
-use num_enum::{IntoPrimitive, TryFromPrimitive};
 use steel::*;
 
 #[repr(u8)]
@@ -67,8 +65,6 @@ account!(MyAccount, Bus);
 ### Instructions
 
 ```rs
-use bytemuck::{Pod, Zeroable};
-use num_enum::TryFromPrimitive;
 use steel::*;
 
 #[repr(u8)]
@@ -89,12 +85,10 @@ instruction!(MyInstruction, Increment);
 ### Errors
 
 ```rs
-use num_enum::IntoPrimitive;
 use steel::*;
-use thiserror::Error;
 
-#[derive(Debug, Error, Clone, Copy, PartialEq, Eq, IntoPrimitive)]
 #[repr(u32)]
+#[derive(Debug, Error, Clone, Copy, PartialEq, Eq, IntoPrimitive)]
 pub enum MyError {
     #[error("You did something wrong")]
     Dummy = 0,
@@ -106,7 +100,6 @@ error!(MyError);
 ### Events
 
 ```rs
-use bytemuck::{Pod, Zeroable};
 use steel::*;
 
 #[repr(C)]
