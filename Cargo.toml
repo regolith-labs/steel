@@ -16,6 +16,6 @@ spl = ["spl-token", "spl-associated-token-account"]
 [dependencies]
 bytemuck = "1.14.3"
 solana-program = "^1.18"
-spl-token = { version = "^4", features = ["no-entrypoint"] }
-spl-associated-token-account = { version = "^2.3", features = [ "no-entrypoint" ] } 
+spl-token = { version = "^4", features = ["no-entrypoint"], optional = true }
+spl-associated-token-account = { version = "^2.3", features = [ "no-entrypoint" ], optional = true } 
 
