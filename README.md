@@ -187,7 +187,7 @@ pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult 
     let counter = counter_info
       .has_owner(&example_1_api::ID)?
       .to_account_mut::<Counter>()? 
-      .check_mut(|c| c.value.lt(&42))?;
+      .check_mut(|c| c.value <= 42)?;
 
     // Update state.
     counter.value += 1;
