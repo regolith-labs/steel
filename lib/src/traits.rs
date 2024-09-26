@@ -21,12 +21,6 @@ pub trait AccountInfoValidation {
     fn is_writable(&self) -> Result<&Self, ProgramError>;
     fn is_executable(&self) -> Result<&Self, ProgramError>;
     fn is_empty(&self) -> Result<&Self, ProgramError>;
-    fn is_empty_pda(
-        &self,
-        seeds: &[&[u8]],
-        bump: u8,
-        program_id: &Pubkey,
-    ) -> Result<&Self, ProgramError>;
     fn is_type<T: Discriminator>(&self) -> Result<&Self, ProgramError>;
     fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
     fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError>;

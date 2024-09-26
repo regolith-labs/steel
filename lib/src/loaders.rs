@@ -36,15 +36,6 @@ impl AccountInfoValidation for AccountInfo<'_> {
         Ok(self)
     }
 
-    fn is_empty_pda(
-        &self,
-        seeds: &[&[u8]],
-        bump: u8,
-        program_id: &Pubkey,
-    ) -> Result<&Self, ProgramError> {
-        self.is_empty()?.has_seeds(seeds, bump, program_id)
-    }
-
     fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
         self.has_address(program_id)?.is_executable()
     }
@@ -118,6 +109,7 @@ impl ToAccount for AccountInfo<'_> {
 impl ToSplToken for AccountInfo<'_> {
     fn to_mint(&self) -> Result<spl_token::state::Mint, ProgramError> {
         unsafe {
+            self.has_owner(&spl_token::ID)?;
             let data = self.try_borrow_data()?.as_ptr();
             spl_token::state::Mint::unpack(std::slice::from_raw_parts(
                 data,
@@ -127,6 +119,7 @@ impl ToSplToken for AccountInfo<'_> {
     }
     fn to_token_account(&self) -> Result<spl_token::state::Account, ProgramError> {
         unsafe {
+            self.has_owner(&spl_token::ID)?;
             let data = self.try_borrow_data()?.as_ptr();
             spl_token::state::Account::unpack(std::slice::from_raw_parts(
                 data,
