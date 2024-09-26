@@ -40,7 +40,8 @@ impl AccountInfoValidation for AccountInfo<'_> {
         self.has_address(program_id)?.is_executable()
     }
 
-    fn is_type<T: Discriminator>(&self) -> Result<&Self, ProgramError> {
+    fn is_type<T: Discriminator>(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
+        self.has_owner(program_id)?;
         if self.try_borrow_data()?[0].ne(&T::discriminator()) {
             return Err(ProgramError::InvalidAccountData);
         }
@@ -81,8 +82,12 @@ impl AccountInfoValidation for AccountInfo<'_> {
 }
 
 impl ToAccount for AccountInfo<'_> {
-    fn to_account<T: AccountDeserialize + Discriminator + Pod>(&self) -> Result<&T, ProgramError> {
+    fn to_account<T: AccountDeserialize + Discriminator + Pod>(
+        &self,
+        program_id: &Pubkey,
+    ) -> Result<&T, ProgramError> {
         unsafe {
+            self.has_owner(program_id)?;
             let data = self.try_borrow_data()?.as_ptr();
             T::try_from_bytes(std::slice::from_raw_parts(
                 data,
@@ -93,9 +98,11 @@ impl ToAccount for AccountInfo<'_> {
 
     fn to_account_mut<T: AccountDeserialize + Discriminator + Pod>(
         &self,
+        program_id: &Pubkey,
     ) -> Result<&mut T, ProgramError> {
         self.is_writable()?;
         unsafe {
+            self.has_owner(program_id)?;
             let data = self.try_borrow_mut_data()?.as_mut_ptr();
             T::try_from_bytes_mut(std::slice::from_raw_parts_mut(
                 data,
