@@ -7,8 +7,8 @@
 - This codebase is under active development. All interfaces are subject to change.
 - There is currently no CLI, init script, or custom localnet toolchain.
 - Use `solana build-sbf` to build your programs.
-- The account "loaders" currently do not yet return readable or mutable account references.
 - The API macros currently do not support IDL generation.
+- ~~The account "loaders" currently do not yet return readable or mutable account references.~~
 
 ## File structure
 
@@ -44,6 +44,8 @@ Steel offers a collection of simple macros for defining your contract API and th
 
 ### Accounts
 
+For accounts, Steel uses a single enum to manage discriminators and a struct for each account type. The `account!` macro helps link these types and implements basic serialization logic.
+
 ```rs
 use steel::*;
 
@@ -66,6 +68,8 @@ account!(MyAccount, Counter);
 
 ### Instructions
 
+For instructions, Steel similarly uses a single enum to manage discriminators and a struct for each instruction args type. The `instruction!` macro helps link these types and implement basic serialization logic.
+
 ```rs
 use steel::*;
 
@@ -73,20 +77,30 @@ use steel::*;
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, TryFromPrimitive)]
 pub enum MyInstruction {
-    Update = 0,
+    Initialize = 0,
+    Add = 1,
 }
 
 /// Struct for instruction args.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
-pub struct Increment {
+pub struct Initialize {}
+
+/// Struct for instruction args.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Pod, Zeroable)]
+pub struct Add {
     pub value: u64,
 }
 
-instruction!(MyInstruction, Increment);
+instruction!(MyInstruction, Initialize);
+instruction!(MyInstruction, Add);
+
 ```
 
 ### Errors
+
+Custom program errors can be created simply by defining an enum for your error messages and passing it to the `error!` macro. 
 
 ```rs
 use steel::*;
@@ -104,6 +118,8 @@ error!(MyError);
 
 ### Events
 
+Similarly, custom program events can be created by defining the event struct and passing it to the `event!` macro. 
+
 ```rs
 use steel::*;
 
@@ -119,14 +135,16 @@ event!(MyEvent);
 
 ## Program
 
-In your instruction implementations, Steel offers helper functions for validating common types of accounts and executing CPIs. 
+In your contract implementation, Steel offers a series of composable functions to parse accounts, validate state, and execute CPIs. 
 
 ### Entrypoint
+
+Steel provides a utility function to streamline the program entrypoint. Securely parse incoming instruction data and dispatch it to handlers.
 
 ```rs
 mod initialize;
 
-use example_0_api::instruction::MyInstruction;
+use example_1_api::instruction::MyInstruction;
 use initialize::*;
 use steel::*;
 
@@ -137,27 +155,41 @@ pub fn process_instruction(
     accounts: &[AccountInfo],
     data: &[u8],
 ) -> ProgramResult {
-    let (ix, data) = parse_instruction::<MyInstruction>(example_0_api::id(), program_id, data)?;
+    let (ix, data) = parse_instruction::<MyInstruction>(example_1_api::ID, program_id, data)?;
 
     match ix {
         MyInstruction::Initialize => process_initialize(accounts, data)?,
+        MyInstruction::Add => process_add(accounts, data)?,
     }
 
     Ok(())
 }
 ```
 
-### Loaders
+### Validation
+
+Steel provides a library of composable account validation checks. You can chain these checks together to validate arbitrary account state and parse it into the type you need. 
 
 ```rs
+use example_1_api::state::Counter;
 use steel::*;
 
-pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
+pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
     // Load accounts.
-    let [signer] = accounts else {
+    let [signer_info, counter_info] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
-    load_signer(signer)?;
+
+    // Validate signer.
+    signer.is_signer()?; 
+
+    // Parse and validate account state.
+    let counter = counter_info
+      .to_account_mut::<Counter>()? 
+      .check_mut(|c| c.value.lt(&42))?;
+
+    // Update state.
+    counter.value += 1;
 
     // Return.
     Ok(())
@@ -165,6 +197,9 @@ pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> Program
 ```
 
 ### CPIs
+
+Steel offers handful of helper functions for executing common CPIs such as initializing PDAs, creating token accounts, minting tokens, burning tokens, and more. 
+
 
 ```rs
 use steel::*;
@@ -174,13 +209,20 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
     let [signer, mint_info, sender_info, receiver_info, token_program] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
-    load_signer(signer)?;
-    load_any_mint(mint_info, false)?;
-    load_token_account(sender_info, Some(signer.key), mint_info.key, true)?;
-    load_token_account(receiver_info, None, mint_info.key, true)?;
-    load_program(token_program, spl_token::id())?;
+    signer.is_signer()?;
+    mint_info.to_mint()?;
+    sender_info
+      .is_writable()?
+      .to_token_account()?
+      .check(|t| t.owner == signer.key)?
+      .check(|t| t.owner == mint_info.key)?;
+    receiver_info
+      .is_writable()?
+      .to_token_account()?
+      .check(|t| t.owner == mint_info.key)?;
+    token_program.is_program(&spl_token::ID)?;
 
-    // Transfer tokens from sender to receiver.
+    // Transfer tokens.
     let amount = 42;
     transfer(
         signer,
@@ -190,7 +232,7 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
         amount,
     )?;
 
-    // Return
+    // Return.
     Ok(())
 }
 ```
