@@ -1,34 +1,11 @@
+use bytemuck::Pod;
 #[cfg(feature = "spl")]
 use solana_program::program_pack::Pack;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 #[cfg(feature = "spl")]
 use spl_token::state::Mint;
 
-use crate::Discriminator;
-
-pub trait AccountInfoValidation {
-    fn is_signer(&self) -> Result<&Self, ProgramError>;
-    fn is_writable(&self) -> Result<&Self, ProgramError>;
-    fn is_executable(&self) -> Result<&Self, ProgramError>;
-    fn is_empty(&self) -> Result<&Self, ProgramError>;
-    fn is_empty_pda(
-        &self,
-        seeds: &[&[u8]],
-        bump: u8,
-        program_id: &Pubkey,
-    ) -> Result<&Self, ProgramError>;
-    fn is_type<T: Discriminator>(&self) -> Result<&Self, ProgramError>;
-    fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError>;
-    fn has_seeds(
-        &self,
-        seeds: &[&[u8]],
-        bump: u8,
-        program_id: &Pubkey,
-    ) -> Result<&Self, ProgramError>;
-    fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError>;
-}
+use crate::{AccountDeserialize, AccountInfoValidation, Discriminator, ToAccount};
 
 impl AccountInfoValidation for AccountInfo<'_> {
     fn is_signer(&self) -> Result<&Self, ProgramError> {
@@ -109,6 +86,31 @@ impl AccountInfoValidation for AccountInfo<'_> {
     fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError> {
         self.has_owner(&solana_program::sysvar::ID)?
             .has_address(sysvar_id)
+    }
+}
+
+impl ToAccount for AccountInfo<'_> {
+    fn to_account<T: AccountDeserialize + Discriminator + Pod>(&self) -> Result<&T, ProgramError> {
+        unsafe {
+            let data = self.try_borrow_data()?.as_ptr();
+            T::try_from_bytes(std::slice::from_raw_parts(
+                data,
+                8 + std::mem::size_of::<T>(),
+            ))
+        }
+    }
+
+    fn to_account_mut<T: AccountDeserialize + Discriminator + Pod>(
+        &self,
+    ) -> Result<&mut T, ProgramError> {
+        self.is_writable()?;
+        unsafe {
+            let data = self.try_borrow_mut_data()?.as_mut_ptr();
+            T::try_from_bytes_mut(std::slice::from_raw_parts_mut(
+                data,
+                8 + std::mem::size_of::<T>(),
+            ))
+        }
     }
 }
 

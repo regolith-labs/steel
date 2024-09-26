@@ -74,6 +74,33 @@ macro_rules! account {
                 $discriminator_name::$struct_name.into()
             }
         }
+
+        impl $crate::AccountValidation for $struct_name {
+            fn check<F>(
+                &self,
+                condition: F,
+            ) -> Result<&Self, solana_program::program_error::ProgramError>
+            where
+                F: Fn(&Self) -> bool,
+            {
+                if !condition(self) {
+                    return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+                }
+                Ok(self)
+            }
+            fn check_mut<F>(
+                &mut self,
+                condition: F,
+            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+            where
+                F: Fn(&Self) -> bool,
+            {
+                if !condition(self) {
+                    return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+                }
+                Ok(self)
+            }
+        }
     };
 }
 
