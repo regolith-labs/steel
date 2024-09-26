@@ -24,9 +24,9 @@ macro_rules! impl_from_bytes {
 macro_rules! impl_account_from_bytes {
     ($struct_name:ident) => {
         impl $crate::AccountDeserialize for $struct_name {
-            fn try_from_bytes(
-                data: &[u8],
-            ) -> Result<&Self, solana_program::program_error::ProgramError> {
+            fn try_from_bytes<'a>(
+                data: &'a [u8],
+            ) -> Result<&'a Self, solana_program::program_error::ProgramError> {
                 if Self::discriminator().ne(&data[0]) {
                     return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
@@ -34,9 +34,9 @@ macro_rules! impl_account_from_bytes {
                     solana_program::program_error::ProgramError::InvalidAccountData,
                 ))
             }
-            fn try_from_bytes_mut(
-                data: &mut [u8],
-            ) -> Result<&mut Self, solana_program::program_error::ProgramError> {
+            fn try_from_bytes_mut<'a>(
+                data: &'a mut [u8],
+            ) -> Result<&'a mut Self, solana_program::program_error::ProgramError> {
                 if Self::discriminator().ne(&data[0]) {
                     return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
@@ -72,6 +72,33 @@ macro_rules! account {
         impl $crate::Discriminator for $struct_name {
             fn discriminator() -> u8 {
                 $discriminator_name::$struct_name.into()
+            }
+        }
+
+        impl $crate::AccountValidation for $struct_name {
+            fn check<F>(
+                &self,
+                condition: F,
+            ) -> Result<&Self, solana_program::program_error::ProgramError>
+            where
+                F: Fn(&Self) -> bool,
+            {
+                if !condition(self) {
+                    return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+                }
+                Ok(self)
+            }
+            fn check_mut<F>(
+                &mut self,
+                condition: F,
+            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+            where
+                F: Fn(&Self) -> bool,
+            {
+                if !condition(self) {
+                    return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+                }
+                Ok(self)
             }
         }
     };
