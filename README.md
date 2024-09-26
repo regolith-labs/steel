@@ -181,7 +181,7 @@ pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult 
     };
 
     // Validate signer.
-    signer.is_signer()?;
+    signer_info.is_signer()?;
 
     // Parse and validate account state.
     let counter = counter_info
@@ -207,24 +207,24 @@ use steel::*;
 
 pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramResult {
     // Load accounts.
-    let [signer, mint_info, sender_info, receiver_info, token_program] = accounts else {
+    let [signer_info, mint_info, sender_info, receiver_info, token_program] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
-    signer.is_signer()?;
+    signer_info.is_signer()?;
 
     mint_info.to_mint()?;
 
     sender_info
       .is_writable()?
       .to_token_account()?
-      .check(|t| t.owner == signer.key)?
-      .check(|t| t.owner == mint_info.key)?;
+      .check(|t| t.owner == *signer_info.key)?
+      .check(|t| t.mint == *mint_info.key)?;
 
     receiver_info
       .is_writable()?
       .to_token_account()?
-      .check(|t| t.owner == mint_info.key)?;
+      .check(|t| t.mint == *mint_info.key)?;
 
     token_program.is_program(&spl_token::ID)?;
 
