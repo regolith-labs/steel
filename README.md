@@ -5,9 +5,9 @@
 ## Notes
 
 - This codebase is under active development. All interfaces are subject to change.
+- IDL generation is currently unsupported.
 - There is currently no CLI, init script, or custom localnet toolchain.
 - Use `solana build-sbf` to build your programs.
-- The API macros currently do not support IDL generation.
 - ~~The account "loaders" currently do not yet return readable or mutable account references.~~
 
 ## Getting started
