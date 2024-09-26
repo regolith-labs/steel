@@ -50,3 +50,9 @@ pub trait ToAccount {
         &self,
     ) -> Result<&mut T, ProgramError>;
 }
+
+#[cfg(feature = "spl")]
+pub trait ToSplToken {
+    fn to_mint(&self) -> Result<spl_token::state::Mint, ProgramError>;
+    fn to_token_account(&self) -> Result<spl_token::state::Account, ProgramError>;
+}
