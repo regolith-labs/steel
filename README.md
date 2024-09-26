@@ -12,7 +12,7 @@
 
 ## Getting started
 
-To start building with Steel, simply add it to your program dependencies.  
+To start building with Steel, simply add it to your workspace dependencies.  
 
 ```
 cargo add steel
