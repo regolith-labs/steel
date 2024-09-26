@@ -197,7 +197,7 @@ pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult 
     // Validate signer.
     signer_info.is_signer()?;
 
-    // Parse and validate account state.
+    // Parse and validate account.
     let counter = counter_info
       .has_owner(&example_1_api::ID)?
       .to_account_mut::<Counter>()? 
