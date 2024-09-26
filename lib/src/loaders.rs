@@ -1,116 +1,115 @@
 #[cfg(feature = "spl")]
 use solana_program::program_pack::Pack;
-use solana_program::{
-    account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey, system_program, sysvar,
-};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 #[cfg(feature = "spl")]
 use spl_token::state::Mint;
 
-/// Errors if:
-/// - Account is not a signer.
-pub fn load_signer(info: &AccountInfo<'_>) -> Result<(), ProgramError> {
-    if !info.is_signer {
-        return Err(ProgramError::MissingRequiredSignature);
-    }
+use crate::Discriminator;
 
-    Ok(())
+pub trait AccountInfoValidation {
+    fn is_signer(&self) -> Result<&Self, ProgramError>;
+    fn is_writable(&self) -> Result<&Self, ProgramError>;
+    fn is_executable(&self) -> Result<&Self, ProgramError>;
+    fn is_empty(&self) -> Result<&Self, ProgramError>;
+    fn is_empty_pda(
+        &self,
+        seeds: &[&[u8]],
+        bump: u8,
+        program_id: &Pubkey,
+    ) -> Result<&Self, ProgramError>;
+    fn is_type<T: Discriminator>(&self) -> Result<&Self, ProgramError>;
+    fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
+    fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError>;
+    fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError>;
+    fn has_seeds(
+        &self,
+        seeds: &[&[u8]],
+        bump: u8,
+        program_id: &Pubkey,
+    ) -> Result<&Self, ProgramError>;
+    fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError>;
 }
 
-/// Errors if:
-/// - Address does not match PDA derived from provided seeds.
-/// - Cannot load as an uninitialized account.
-pub fn load_uninitialized_pda(
-    info: &AccountInfo<'_>,
-    seeds: &[&[u8]],
-    bump: u8,
-    program_id: &Pubkey,
-) -> Result<(), ProgramError> {
-    let pda = Pubkey::find_program_address(seeds, program_id);
-
-    if info.key.ne(&pda.0) {
-        return Err(ProgramError::InvalidSeeds);
+impl AccountInfoValidation for AccountInfo<'_> {
+    fn is_signer(&self) -> Result<&Self, ProgramError> {
+        if !self.is_signer {
+            return Err(ProgramError::MissingRequiredSignature);
+        }
+        Ok(self)
     }
 
-    if bump.ne(&pda.1) {
-        return Err(ProgramError::InvalidSeeds);
+    fn is_writable(&self) -> Result<&Self, ProgramError> {
+        if !self.is_writable {
+            return Err(ProgramError::MissingRequiredSignature);
+        }
+        Ok(self)
     }
 
-    load_system_account(info, true)
-}
-
-/// Errors if:
-/// - Owner is not the system program.
-/// - Data is not empty.
-/// - Account is not writable.
-pub fn load_system_account(info: &AccountInfo<'_>, is_writable: bool) -> Result<(), ProgramError> {
-    if info.owner.ne(&system_program::id()) {
-        return Err(ProgramError::InvalidAccountOwner);
+    fn is_executable(&self) -> Result<&Self, ProgramError> {
+        if !self.executable {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(self)
     }
 
-    if !info.data_is_empty() {
-        return Err(ProgramError::AccountAlreadyInitialized);
+    fn is_empty(&self) -> Result<&Self, ProgramError> {
+        if !self.data_is_empty() {
+            return Err(ProgramError::AccountAlreadyInitialized);
+        }
+        Ok(self)
     }
 
-    if is_writable && !info.is_writable {
-        return Err(ProgramError::InvalidAccountData);
+    fn is_empty_pda(
+        &self,
+        seeds: &[&[u8]],
+        bump: u8,
+        program_id: &Pubkey,
+    ) -> Result<&Self, ProgramError> {
+        self.is_empty()?.has_seeds(seeds, bump, program_id)
     }
 
-    Ok(())
-}
-
-/// Errors if:
-/// - Owner is not the sysvar address.
-/// - Account cannot load with the expected address.
-pub fn load_sysvar(info: &AccountInfo<'_>, key: Pubkey) -> Result<(), ProgramError> {
-    if info.owner.ne(&sysvar::id()) {
-        return Err(ProgramError::InvalidAccountOwner);
+    fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
+        self.has_address(program_id)?.is_executable()
     }
 
-    load_account(info, key, false)
-}
-
-/// Errors if:
-/// - Address does not match the expected value.
-/// - Expected to be writable, but is not.
-pub fn load_account(
-    info: &AccountInfo<'_>,
-    key: Pubkey,
-    is_writable: bool,
-) -> Result<(), ProgramError> {
-    if info.key.ne(&key) {
-        return Err(ProgramError::InvalidAccountData);
+    fn is_type<T: Discriminator>(&self) -> Result<&Self, ProgramError> {
+        if self.try_borrow_data()?[0].ne(&T::discriminator()) {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(self)
     }
 
-    if is_writable && !info.is_writable {
-        return Err(ProgramError::InvalidAccountData);
+    fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError> {
+        if self.owner.ne(owner) {
+            return Err(ProgramError::InvalidAccountOwner);
+        }
+        Ok(self)
     }
 
-    Ok(())
-}
-
-/// Errors if:
-/// - Address does not match the expected value.
-/// - Account is not executable.
-pub fn load_program(info: &AccountInfo<'_>, key: Pubkey) -> Result<(), ProgramError> {
-    if info.key.ne(&key) {
-        return Err(ProgramError::IncorrectProgramId);
+    fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError> {
+        if self.key.ne(&address) {
+            return Err(ProgramError::InvalidAccountData);
+        }
+        Ok(self)
     }
 
-    if !info.executable {
-        return Err(ProgramError::InvalidAccountData);
+    fn has_seeds(
+        &self,
+        seeds: &[&[u8]],
+        bump: u8,
+        program_id: &Pubkey,
+    ) -> Result<&Self, ProgramError> {
+        let pda = Pubkey::find_program_address(seeds, program_id);
+        if self.key.ne(&pda.0) || bump.ne(&pda.1) {
+            return Err(ProgramError::InvalidSeeds);
+        }
+        Ok(self)
     }
 
-    Ok(())
-}
-
-/// Errors if:
-/// - Account is not writable.
-pub fn load_any(info: &AccountInfo<'_>, is_writable: bool) -> Result<(), ProgramError> {
-    if is_writable && !info.is_writable {
-        return Err(ProgramError::InvalidAccountData);
+    fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError> {
+        self.has_owner(&solana_program::sysvar::ID)?
+            .has_address(sysvar_id)
     }
-
-    Ok(())
 }
 
 /// Errors if:

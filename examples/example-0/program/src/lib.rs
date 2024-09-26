@@ -8,7 +8,7 @@ entrypoint!(process_instruction);
 
 pub fn process_instruction(
     program_id: &Pubkey,
-    accounts: &[AccountInfo],
+    accounts: &[AccountInfo<'_>],
     data: &[u8],
 ) -> ProgramResult {
     let (ix, data) = parse_instruction::<MyInstruction>(example_0_api::id(), program_id, data)?;
