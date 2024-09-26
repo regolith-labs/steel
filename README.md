@@ -10,7 +10,21 @@
 - The API macros currently do not support IDL generation.
 - ~~The account "loaders" currently do not yet return readable or mutable account references.~~
 
-## File structure
+## Getting started
+
+To start building with Steel, simply add it to your program dependencies.  
+
+```
+cargo add steel
+```
+
+We plan to offer a CLI soon to initialize and manage new projects. For now, you're on your own. We recommend forking one of the example programs to get started with the recommended folder structure. To build, use the standard Solana toolchain:
+
+```
+cargo build-sbf
+```
+
+## Folder structure
 
 While not strictly enforced, we recommend organizing your Solana program with the following file structure. We have found this pattern improves code readability, separating the contract interface from its implementation, and scales well as contract complexity increases. 
 
