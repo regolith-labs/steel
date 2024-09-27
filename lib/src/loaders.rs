@@ -88,9 +88,8 @@ impl ToAccount for AccountInfo<'_> {
     ) -> Result<&T, ProgramError> {
         unsafe {
             self.has_owner(program_id)?;
-            let data = self.try_borrow_data()?.as_ptr();
             T::try_from_bytes(std::slice::from_raw_parts(
-                data,
+                self.try_borrow_data()?.as_ptr(),
                 8 + std::mem::size_of::<T>(),
             ))
         }
@@ -103,9 +102,8 @@ impl ToAccount for AccountInfo<'_> {
         self.is_writable()?;
         unsafe {
             self.has_owner(program_id)?;
-            let data = self.try_borrow_mut_data()?.as_mut_ptr();
             T::try_from_bytes_mut(std::slice::from_raw_parts_mut(
-                data,
+                self.try_borrow_mut_data()?.as_mut_ptr(),
                 8 + std::mem::size_of::<T>(),
             ))
         }
@@ -117,9 +115,8 @@ impl ToSplToken for AccountInfo<'_> {
     fn to_mint(&self) -> Result<spl_token::state::Mint, ProgramError> {
         unsafe {
             self.has_owner(&spl_token::ID)?;
-            let data = self.try_borrow_data()?.as_ptr();
             spl_token::state::Mint::unpack(std::slice::from_raw_parts(
-                data,
+                self.try_borrow_data()?.as_ptr(),
                 spl_token::state::Mint::LEN,
             ))
         }
@@ -127,9 +124,8 @@ impl ToSplToken for AccountInfo<'_> {
     fn to_token_account(&self) -> Result<spl_token::state::Account, ProgramError> {
         unsafe {
             self.has_owner(&spl_token::ID)?;
-            let data = self.try_borrow_data()?.as_ptr();
             spl_token::state::Account::unpack(std::slice::from_raw_parts(
-                data,
+                self.try_borrow_data()?.as_ptr(),
                 spl_token::state::Account::LEN,
             ))
         }
@@ -140,13 +136,11 @@ impl ToSplToken for AccountInfo<'_> {
         mint: &Pubkey,
     ) -> Result<spl_token::state::Account, ProgramError> {
         unsafe {
-            let expected_address =
-                spl_associated_token_account::get_associated_token_address(owner, mint);
-            self.has_address(&expected_address)?
-                .has_owner(&spl_token::ID)?;
-            let data = self.try_borrow_data()?.as_ptr();
+            self.has_owner(&spl_token::ID)?.has_address(
+                &spl_associated_token_account::get_associated_token_address(owner, mint),
+            )?;
             spl_token::state::Account::unpack(std::slice::from_raw_parts(
-                data,
+                self.try_borrow_data()?.as_ptr(),
                 spl_token::state::Account::LEN,
             ))
         }
