@@ -39,14 +39,13 @@ pub trait Discriminator {
 }
 
 pub trait ToAccount {
-    fn to_account<T: AccountDeserialize + Discriminator + Pod>(
-        &self,
-        program_id: &Pubkey,
-    ) -> Result<&T, ProgramError>;
-    fn to_account_mut<T: AccountDeserialize + Discriminator + Pod>(
-        &self,
-        program_id: &Pubkey,
-    ) -> Result<&mut T, ProgramError>;
+    fn to_account<T>(&self, program_id: &Pubkey) -> Result<&T, ProgramError>
+    where
+        T: AccountDeserialize + Discriminator + Pod;
+
+    fn to_account_mut<T>(&self, program_id: &Pubkey) -> Result<&mut T, ProgramError>
+    where
+        T: AccountDeserialize + Discriminator + Pod;
 }
 
 #[cfg(feature = "spl")]
