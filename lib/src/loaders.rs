@@ -135,12 +135,10 @@ impl ToSplToken for AccountInfo<'_> {
         owner: &Pubkey,
         mint: &Pubkey,
     ) -> Result<spl_token::state::Account, ProgramError> {
-        unsafe {
-            self.has_address(&spl_associated_token_account::get_associated_token_address(
-                owner, mint,
-            ))?
-            .to_token_account()
-        }
+        self.has_address(&spl_associated_token_account::get_associated_token_address(
+            owner, mint,
+        ))?
+        .to_token_account()
     }
 }
 
