@@ -1,6 +1,6 @@
 [package]
 name = "steel"
-description = "Modular framework for building smart contracts on Solana"
+description = "Solana smart contract framework"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
