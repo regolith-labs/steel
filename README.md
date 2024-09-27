@@ -1,4 +1,4 @@
-# Steel
+# 🏗️ Steel 
 
 **Steel is a framework for building smart contracts on Solana.** It provides of a set of helper functions, macros, and code patterns for scaffolding smart contracts. Steel is generally designed to be unopinionated, minimizing boilerplate and maximizing flexibility.
 
@@ -6,20 +6,22 @@
 
 - **Steel is under active development. All interfaces are subject to change.**
 - **This code is unaudited. Use at your own risk**
-- IDL generation is currently unsupported.
-- There is currently no CLI, init script, or custom localnet toolchain.
-- Use `solana build-sbf` to build your programs.
-- ~~The account "loaders" currently do not yet return readable or mutable account references.~~
+
+## Todos
+
+- [ ] IDL generation.
+- [ ] CLI with init script and localnet toolchain.
+- [x] ~~Account validators and parsers.~~
 
 ## Getting started
 
-To start building with Steel, simply add it to your workspace dependencies.  
+To build with Steel, add it to your workspace dependencies:
 
 ```
 cargo add steel
 ```
 
-We plan to offer a CLI soon to initialize and manage new projects. For now, you're on your own. We recommend forking one of the example programs to get started with the recommended folder structure. To build, use the standard Solana toolchain:
+To compile your program, use the standard Solana toolchain:
 
 ```
 cargo build-sbf
@@ -55,7 +57,7 @@ Cargo.toml (workspace)
 
 ## API
 
-Steel offers a collection of simple macros for defining your contract API and the basic building blocks of your program. 
+Steel offers a collection of simple macros for defining the interface and building blocks of your program. 
 
 ### Accounts
 
@@ -154,7 +156,7 @@ In your contract implementation, Steel offers a series of composable functions t
 
 ### Entrypoint
 
-Steel provides a utility function to streamline the program entrypoint. Securely parse incoming instruction data and dispatch it to handlers.
+Steel provides a utility function to streamline the program entrypoint. Securely parse incoming instruction data and dispatch it to a handler.
 
 ```rs
 mod add;
@@ -186,7 +188,7 @@ pub fn process_instruction(
 
 ### Validation
 
-Steel provides a library of composable account validation checks. You can chain these checks together to validate arbitrary account state and parse it into the type you need. 
+Steel provides a library of composable functions for validating account data. You can chain these functions together to validate arbitrary account state and parse it into whatever type you need. 
 
 ```rs
 use example_1_api::state::Counter;
@@ -216,7 +218,7 @@ pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult 
 
 ### CPIs
 
-Steel offers handful of helper functions for executing common CPIs such as initializing PDAs, creating token accounts, minting tokens, burning tokens, and more. 
+Steel offers a handful of helper functions for executing common CPIs such as creating accounts, creating token accounts, minting tokens, burning tokens, and more. 
 
 
 ```rs
