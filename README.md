@@ -1,6 +1,6 @@
 # 🏗️ Steel 
 
-**Steel is a framework for building smart contracts on Solana.** It provides of a set of helper functions, macros, and code patterns for scaffolding smart contracts. Steel is generally designed to be unopinionated, minimizing boilerplate and maximizing flexibility.
+**Steel is a new framework for building smart contracts on Solana.** It provides a library of helper functions, macros, and code patterns for implementing secure and maintainable programs. Steel is generally designed to be unopinionated, minimizing boilerplate code and maximizing developer flexibility.
 
 ## Notes
 
@@ -11,19 +11,19 @@
 
 - [ ] IDL generation.
 - [ ] CLI with init script and localnet toolchain.
-- [x] ~~Account validators and parsers.~~
+- [x] ~~Account parsers and validation.~~
 
 ## Getting started
 
 To build with Steel, add it to your workspace dependencies:
 
-```
+```sh
 cargo add steel
 ```
 
 To compile your program, use the standard Solana toolchain:
 
-```
+```sh
 cargo build-sbf
 ```
 
