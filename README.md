@@ -4,7 +4,8 @@
 
 ## Notes
 
-- This codebase is under active development. All interfaces are subject to change.
+**- Steel is under active development. All interfaces are subject to change.**
+**- This code is unaudited. Use at your own risk**
 - IDL generation is currently unsupported.
 - There is currently no CLI, init script, or custom localnet toolchain.
 - Use `solana build-sbf` to build your programs.
