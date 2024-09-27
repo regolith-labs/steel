@@ -1,15 +1,44 @@
+use bytemuck::Pod;
 use solana_program::{
     account_info::AccountInfo, entrypoint::ProgramResult, pubkey::Pubkey, rent::Rent,
     sysvar::Sysvar,
 };
 
-/// Creates a new pda.
+use crate::Discriminator;
+
+/// Creates a new program account.
 #[inline(always)]
-pub fn create_pda<'a, 'info>(
+pub fn create_account<'a, 'info, T: Discriminator + Pod>(
+    target_account: &'a AccountInfo<'info>,
+    owner: &Pubkey,
+    seeds: &[&[u8]],
+    system_program: &'a AccountInfo<'info>,
+    payer: &'a AccountInfo<'info>,
+) -> ProgramResult {
+    // Allocate space.
+    allocate_account(
+        target_account,
+        owner,
+        8 + std::mem::size_of::<T>(),
+        seeds,
+        system_program,
+        payer,
+    )?;
+
+    // Set discriminator.
+    let mut data = target_account.data.borrow_mut();
+    data[0] = T::discriminator();
+
+    Ok(())
+}
+
+/// Allocates space for a new program account.
+#[inline(always)]
+pub fn allocate_account<'a, 'info>(
     target_account: &'a AccountInfo<'info>,
     owner: &Pubkey,
     space: usize,
-    pda_seeds: &[&[u8]],
+    seeds: &[&[u8]],
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
 ) -> ProgramResult {
@@ -29,7 +58,7 @@ pub fn create_pda<'a, 'info>(
                 target_account.clone(),
                 system_program.clone(),
             ],
-            &[pda_seeds],
+            &[seeds],
         )?;
     } else {
         // Otherwise, if balance is nonzero:
@@ -57,14 +86,14 @@ pub fn create_pda<'a, 'info>(
         solana_program::program::invoke_signed(
             &solana_program::system_instruction::allocate(target_account.key, space as u64),
             &[target_account.clone(), system_program.clone()],
-            &[pda_seeds],
+            &[seeds],
         )?;
 
         // 3) assign our program as the owner
         solana_program::program::invoke_signed(
             &solana_program::system_instruction::assign(target_account.key, owner),
             &[target_account.clone(), system_program.clone()],
-            &[pda_seeds],
+            &[seeds],
         )?;
     }
 
@@ -73,7 +102,7 @@ pub fn create_pda<'a, 'info>(
 
 #[cfg(feature = "spl")]
 #[inline(always)]
-pub fn create_ata<'info>(
+pub fn create_associated_token_account<'info>(
     funder_info: &AccountInfo<'info>,
     owner_info: &AccountInfo<'info>,
     token_account_info: &AccountInfo<'info>,
