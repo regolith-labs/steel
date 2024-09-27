@@ -250,7 +250,7 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
     // Transfer tokens.
     let amount = 42;
     transfer(
-        signer,
+        signer_info,
         sender_info,
         receiver_info,
         token_program,
