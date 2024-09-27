@@ -18,6 +18,7 @@ pub use solana_program::{
     instruction::{AccountMeta, Instruction},
     program_error::ProgramError,
     pubkey::Pubkey,
+    system_program, sysvar,
     sysvar::Sysvar,
 };
 pub use thiserror::Error;
