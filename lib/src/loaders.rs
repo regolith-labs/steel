@@ -134,6 +134,23 @@ impl ToSplToken for AccountInfo<'_> {
             ))
         }
     }
+    fn to_associated_token_account(
+        &self,
+        owner: &Pubkey,
+        mint: &Pubkey,
+    ) -> Result<spl_token::state::Account, ProgramError> {
+        unsafe {
+            let expected_address =
+                spl_associated_token_account::get_associated_token_address(owner, mint);
+            self.has_address(&expected_address)?
+                .has_owner(&spl_token::ID)?;
+            let data = self.try_borrow_data()?.as_ptr();
+            spl_token::state::Account::unpack(std::slice::from_raw_parts(
+                data,
+                spl_token::state::Account::LEN,
+            ))
+        }
+    }
 }
 
 #[cfg(feature = "spl")]

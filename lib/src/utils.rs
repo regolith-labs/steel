@@ -2,7 +2,7 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 /// Parses an instruction from the instruction data.
 pub fn parse_instruction<'a, T: std::convert::TryFrom<u8>>(
-    api_id: Pubkey,
+    api_id: &'a Pubkey,
     program_id: &'a Pubkey,
     data: &'a [u8],
 ) -> Result<(T, &'a [u8]), ProgramError> {

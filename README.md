@@ -165,17 +165,15 @@ mod initialize;
 use add::*;
 use initialize::*;
 
-use example_1_api::instruction::MyInstruction;
+use example_1_api::instruction::*;
 use steel::*;
-
-entrypoint!(process_instruction);
 
 pub fn process_instruction(
     program_id: &Pubkey,
     accounts: &[AccountInfo],
     data: &[u8],
 ) -> ProgramResult {
-    let (ix, data) = parse_instruction::<MyInstruction>(example_1_api::ID, program_id, data)?;
+    let (ix, data) = parse_instruction::<MyInstruction>(&example_1_api::ID, program_id, data)?;
 
     match ix {
         MyInstruction::Initialize => process_initialize(accounts, data)?,
@@ -184,6 +182,8 @@ pub fn process_instruction(
 
     Ok(())
 }
+
+entrypoint!(process_instruction);
 ```
 
 ### Validation

@@ -52,4 +52,9 @@ pub trait ToAccount {
 pub trait ToSplToken {
     fn to_mint(&self) -> Result<spl_token::state::Mint, ProgramError>;
     fn to_token_account(&self) -> Result<spl_token::state::Account, ProgramError>;
+    fn to_associated_token_account(
+        &self,
+        owner: &Pubkey,
+        mint: &Pubkey,
+    ) -> Result<spl_token::state::Account, ProgramError>;
 }
