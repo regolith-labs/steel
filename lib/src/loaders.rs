@@ -136,13 +136,10 @@ impl ToSplToken for AccountInfo<'_> {
         mint: &Pubkey,
     ) -> Result<spl_token::state::Account, ProgramError> {
         unsafe {
-            self.has_owner(&spl_token::ID)?.has_address(
-                &spl_associated_token_account::get_associated_token_address(owner, mint),
-            )?;
-            spl_token::state::Account::unpack(std::slice::from_raw_parts(
-                self.try_borrow_data()?.as_ptr(),
-                spl_token::state::Account::LEN,
-            ))
+            self.has_address(&spl_associated_token_account::get_associated_token_address(
+                owner, mint,
+            ))?
+            .to_token_account()
         }
     }
 }
