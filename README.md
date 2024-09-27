@@ -156,10 +156,13 @@ In your contract implementation, Steel offers a series of composable functions t
 Steel provides a utility function to streamline the program entrypoint. Securely parse incoming instruction data and dispatch it to handlers.
 
 ```rs
+mod add;
 mod initialize;
 
-use example_1_api::instruction::MyInstruction;
+use add::*;
 use initialize::*;
+
+use example_1_api::instruction::MyInstruction;
 use steel::*;
 
 entrypoint!(process_instruction);
