@@ -206,8 +206,8 @@ pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult 
 
     // Parse and validate account.
     let counter = counter_info
-      .to_account_mut::<Counter>(&example_api::ID)? 
-      .check_mut(|c| c.value <= 42)?;
+        .to_account_mut::<Counter>(&example_api::ID)? 
+        .check_mut(|c| c.value <= 42)?;
 
     // Update state.
     counter.value += 1;
@@ -236,15 +236,15 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
     mint_info.to_mint()?;
 
     sender_info
-      .is_writable()?
-      .to_token_account()?
-      .check(|t| t.owner == *signer_info.key)?
-      .check(|t| t.mint == *mint_info.key)?;
+        .is_writable()?
+        .to_token_account()?
+        .check(|t| t.owner == *signer_info.key)?
+        .check(|t| t.mint == *mint_info.key)?;
 
     receiver_info
-      .is_writable()?
-      .to_token_account()?
-      .check(|t| t.mint == *mint_info.key)?;
+        .is_writable()?
+        .to_token_account()?
+        .check(|t| t.mint == *mint_info.key)?;
 
     token_program.is_program(&spl_token::ID)?;
 
