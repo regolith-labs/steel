@@ -1,0 +1,25 @@
+mod add;
+mod initialize;
+
+use add::*;
+use initialize::*;
+        
+use {name_libcase}_api::prelude::*;
+use steel::*;
+
+pub fn process_instruction(
+    program_id: &Pubkey,
+    accounts: &[AccountInfo],
+    data: &[u8],
+) -> ProgramResult {
+    let (ix, data) = parse_instruction(&{name_libcase}_api::ID, program_id, data)?;
+
+    match ix {
+        {name_typecase}Instruction::Initialize => process_initialize(accounts, data)?,
+        {name_typecase}Instruction::Add => process_add(accounts, data)?,
+    }
+
+    Ok(())
+}
+
+entrypoint!(process_instruction);
