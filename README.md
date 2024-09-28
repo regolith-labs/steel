@@ -10,7 +10,8 @@
 ## Todos
 
 - [ ] IDL generation.
-- [ ] CLI with init script and localnet toolchain.
+- [ ] Localnet toolchain.
+- [x] ~~CLI with init script.~~
 - [x] ~~Account parsers and validation.~~
 
 ## Getting started
