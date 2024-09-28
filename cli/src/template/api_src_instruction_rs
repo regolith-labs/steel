@@ -1,0 +1,15 @@
+use steel::*;
+
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, TryFromPrimitive)]
+pub enum {name_typecase}Instruction {
+    Hello = 0,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Pod, Zeroable)]
+pub struct Hello {
+    pub value: [u8; 8] 
+}
+
+instruction!({name_typecase}Instruction, Hello);

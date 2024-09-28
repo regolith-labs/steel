@@ -1,0 +1,29 @@
+[package]
+name = "steel-cli"
+description = "A command line interface for building Solana programs."
+readme = "./README.md"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+repository.workspace = true
+keywords.workspace = true
+
+[[bin]]
+name = "steel"
+path = "src/main.rs"
+
+[features]
+default = []
+admin = []
+
+[dependencies]
+clap.workspace = true
+colored.workspace = true
+indicatif.workspace = true 
+git2.workspace = true
+prettyplease.workspace = true
+syn.workspace = true
+tokio.workspace = true
+quote.workspace = true
