@@ -166,7 +166,7 @@ mod initialize;
 use add::*;
 use initialize::*;
 
-use example_1_api::instruction::*;
+use example_api::prelude::*;
 use steel::*;
 
 pub fn process_instruction(
@@ -174,7 +174,7 @@ pub fn process_instruction(
     accounts: &[AccountInfo],
     data: &[u8],
 ) -> ProgramResult {
-    let (ix, data) = parse_instruction::<MyInstruction>(&example_1_api::ID, program_id, data)?;
+    let (ix, data) = parse_instruction::<MyInstruction>(&example_api::ID, program_id, data)?;
 
     match ix {
         MyInstruction::Initialize => process_initialize(accounts, data)?,
@@ -192,7 +192,7 @@ entrypoint!(process_instruction);
 Steel provides a library of composable functions for validating account data. You can chain these functions together to validate arbitrary account state and parse it into whatever type you need. 
 
 ```rs
-use example_1_api::state::Counter;
+use example_api::prelude::*;
 use steel::*;
 
 pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
@@ -206,7 +206,7 @@ pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult 
 
     // Parse and validate account.
     let counter = counter_info
-      .to_account_mut::<Counter>(&example_1_api::ID)? 
+      .to_account_mut::<Counter>(&example_api::ID)? 
       .check_mut(|c| c.value <= 42)?;
 
     // Update state.
