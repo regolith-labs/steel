@@ -1,2 +1,2 @@
-/// The seed of the user account PDA.
-pub const USER: &[u8] = b"user";
+/// Seed of the counter account PDA.
+pub const COUNTER: &[u8] = b"counter";

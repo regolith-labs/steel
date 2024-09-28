@@ -4,8 +4,8 @@ use super::{name_typecase}Account;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
-pub struct User {
-    pub id: u64            
+pub struct Counter {
+    pub value: u64 
 }
 
-account!({name_typecase}Account, User);
+account!({name_typecase}Account, Counter);

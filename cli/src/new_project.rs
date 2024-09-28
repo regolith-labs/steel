@@ -52,7 +52,7 @@ fn stub_api(base_path: &Path, project_name: &String) -> io::Result<()> {
     const API_SRC_INSTRUCTION_RS: &str = include_str!("template/api_src_instruction_rs");
     const API_SRC_SDK_RS: &str = include_str!("template/api_src_sdk_rs");
     const API_SRC_STATE_MOD_RS: &str = include_str!("template/api_src_state_mod_rs");
-    const API_SRC_STATE_USER_RS: &str = include_str!("template/api_src_state_user_rs");
+    const API_SRC_STATE_COUNTER_RS: &str = include_str!("template/api_src_state_counter_rs");
 
     // Stub files
     stub_file(API_CARGO_TOML, &api_path.join("Cargo.toml"), project_name)?;
@@ -79,8 +79,8 @@ fn stub_api(base_path: &Path, project_name: &String) -> io::Result<()> {
         project_name,
     )?;
     stub_file(
-        API_SRC_STATE_USER_RS,
-        &api_src_state_path.join("user.rs"),
+        API_SRC_STATE_COUNTER_RS,
+        &api_src_state_path.join("counter.rs"),
         project_name,
     )?;
 
@@ -98,7 +98,8 @@ fn stub_program(base_path: &Path, project_name: &String) -> io::Result<()> {
     // Load templates
     const PROGRAM_CARGO_TOML: &str = include_str!("template/program_cargo_toml");
     const PROGRAM_SRC_LIB_RS: &str = include_str!("template/program_src_lib_rs");
-    const PROGRAM_SRC_HELLO_RS: &str = include_str!("template/program_src_hello_rs");
+    const PROGRAM_SRC_ADD_RS: &str = include_str!("template/program_src_add_rs");
+    const PROGRAM_SRC_INITIALIZE_RS: &str = include_str!("template/program_src_initialize_rs");
 
     // Stub files
     stub_file(
@@ -112,8 +113,13 @@ fn stub_program(base_path: &Path, project_name: &String) -> io::Result<()> {
         project_name,
     )?;
     stub_file(
-        PROGRAM_SRC_HELLO_RS,
-        &program_src_path.join("hello.rs"),
+        PROGRAM_SRC_ADD_RS,
+        &program_src_path.join("add.rs"),
+        project_name,
+    )?;
+    stub_file(
+        PROGRAM_SRC_INITIALIZE_RS,
+        &program_src_path.join("initialize.rs"),
         project_name,
     )?;
 

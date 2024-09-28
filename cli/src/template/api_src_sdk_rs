@@ -2,11 +2,21 @@ use steel::*;
 
 use crate::prelude::*;
 
-/// Builds a hello instruction.
-pub fn hello(signer: Pubkey, value: u64) -> Instruction {
+pub fn initialize(signer: Pubkey) -> Instruction {
     Instruction {
         program_id: crate::ID,
         accounts: vec![AccountMeta::new(signer, true)],
-        data: Hello { value: value.to_le_bytes() }.to_bytes()
+        data: Initialize { }.to_bytes()
+    }
+}
+
+pub fn add(signer: Pubkey, amount: u64) -> Instruction {
+    Instruction {
+        program_id: crate::ID,
+        accounts: vec![
+            AccountMeta::new(signer, true),
+            AccountMeta::new(counter_pda().0, false),
+        ],
+        data: Add { amount }.to_bytes()
     }
 }

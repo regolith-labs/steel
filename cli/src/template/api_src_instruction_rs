@@ -3,13 +3,19 @@ use steel::*;
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, TryFromPrimitive)]
 pub enum {name_typecase}Instruction {
-    Hello = 0,
+    Initialize = 0,
+    Add = 1
 }
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
-pub struct Hello {
-    pub value: [u8; 8] 
+pub struct Initialize {}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Pod, Zeroable)]
+pub struct Add {
+    pub amount: u64
 }
 
-instruction!({name_typecase}Instruction, Hello);
+instruction!({name_typecase}Instruction, Initialize);
+instruction!({name_typecase}Instruction, Add);
