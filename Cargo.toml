@@ -28,4 +28,8 @@ thiserror = "1.0.57"
 tokio = "1.35"
 quote = "1.0"
 
-
+# [workspace.dev-dependencies]
+# bs64 = "0.1.2"
+# solana-program-test = "^1.18"
+# solana-sdk = "^1.18"
+# tokio = { version = "1.35", features = ["full"] }

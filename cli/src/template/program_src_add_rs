@@ -4,6 +4,7 @@ use steel::*;
 pub fn process_add(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramResult {
     // Parse args.
     let args = Add::try_from_bytes(data)?;
+	let amount = u64::from_le_bytes(args.amount);
 
     // Load accounts.
     let [signer_info, counter_info] = accounts else {
@@ -15,7 +16,7 @@ pub fn process_add(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramResult {
 		.check_mut(|c| c.value < 100)?;
 
     // Update state 
-	counter.value += args.amount;
+	counter.value += amount;
 
     Ok(())
 }

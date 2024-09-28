@@ -14,7 +14,7 @@ pub struct Initialize {}
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct Add {
-    pub amount: u64
+    pub amount: [u8; 8]
 }
 
 instruction!({name_typecase}Instruction, Initialize);

@@ -17,7 +17,7 @@ pub fn new_project(args: NewArgs) {
 
 fn stub_workspace(base_path: &Path, project_name: &String) -> io::Result<()> {
     // Create folder
-    fs::create_dir_all(&base_path).expect("Failed to create workspace directory");
+    fs::create_dir_all(&base_path)?;
 
     // Load templates
     const CARGO_TOML: &str = include_str!("template/cargo_toml");
@@ -42,7 +42,7 @@ fn stub_api(base_path: &Path, project_name: &String) -> io::Result<()> {
     let api_src_state_path = api_src_path.join("state");
 
     // Create folders
-    fs::create_dir_all(&api_src_state_path).expect("Failed to create api directory");
+    fs::create_dir_all(&api_src_state_path)?;
 
     // Load templates
     const API_CARGO_TOML: &str = include_str!("template/api_cargo_toml");
@@ -91,15 +91,18 @@ fn stub_program(base_path: &Path, project_name: &String) -> io::Result<()> {
     // Derive paths
     let program_path = base_path.join("program");
     let program_src_path = program_path.join("src");
+    let program_tests_path = program_path.join("tests");
 
     // Create folders
-    fs::create_dir_all(&program_src_path).expect("Failed to create program directory");
+    fs::create_dir_all(&program_src_path)?;
+    fs::create_dir_all(&program_tests_path)?;
 
     // Load templates
     const PROGRAM_CARGO_TOML: &str = include_str!("template/program_cargo_toml");
     const PROGRAM_SRC_LIB_RS: &str = include_str!("template/program_src_lib_rs");
     const PROGRAM_SRC_ADD_RS: &str = include_str!("template/program_src_add_rs");
     const PROGRAM_SRC_INITIALIZE_RS: &str = include_str!("template/program_src_initialize_rs");
+    const PROGRAM_TESTS_TEST_RS: &str = include_str!("template/program_tests_test_rs");
 
     // Stub files
     stub_file(
@@ -120,6 +123,11 @@ fn stub_program(base_path: &Path, project_name: &String) -> io::Result<()> {
     stub_file(
         PROGRAM_SRC_INITIALIZE_RS,
         &program_src_path.join("initialize.rs"),
+        project_name,
+    )?;
+    stub_file(
+        PROGRAM_TESTS_TEST_RS,
+        &program_tests_path.join("test.rs"),
         project_name,
     )?;
 
