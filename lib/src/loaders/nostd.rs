@@ -1,39 +1,41 @@
-pub mod nostd;
+#![cfg(feature = "nostd")]
 
 use bytemuck::Pod;
+use solana_nostd_entrypoint::NoStdAccountInfo;
 #[cfg(feature = "spl")]
 use solana_program::program_pack::Pack;
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{AccountDeserialize, AccountInfoValidation, Discriminator, ToAccount};
-#[cfg(feature = "spl")]
-use crate::{AccountValidation, ToSplToken};
 
-impl AccountInfoValidation for AccountInfo<'_> {
+impl AccountInfoValidation for NoStdAccountInfo {
     fn is_signer(&self) -> Result<&Self, ProgramError> {
-        if !self.is_signer {
+        if !self.is_signer() {
             return Err(ProgramError::MissingRequiredSignature);
         }
         Ok(self)
     }
 
     fn is_writable(&self) -> Result<&Self, ProgramError> {
-        if !self.is_writable {
+        if !self.is_writable() {
             return Err(ProgramError::MissingRequiredSignature);
         }
         Ok(self)
     }
 
     fn is_executable(&self) -> Result<&Self, ProgramError> {
-        if !self.executable {
+        if !self.executable() {
             return Err(ProgramError::InvalidAccountData);
         }
         Ok(self)
     }
 
     fn is_empty(&self) -> Result<&Self, ProgramError> {
-        if !self.data_is_empty() {
-            return Err(ProgramError::AccountAlreadyInitialized);
+        let account_data = self
+            .try_borrow_data()
+            .ok_or(ProgramError::UninitializedAccount)?;
+        if account_data.is_empty() {
+            return Err(ProgramError::UninitializedAccount);
         }
         Ok(self)
     }
@@ -44,21 +46,25 @@ impl AccountInfoValidation for AccountInfo<'_> {
 
     fn is_type<T: Discriminator>(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
         self.has_owner(program_id)?;
-        if self.try_borrow_data()?[0].ne(&T::discriminator()) {
+        if self
+            .try_borrow_data()
+            .ok_or(ProgramError::AccountBorrowFailed)?[0]
+            .ne(&T::discriminator())
+        {
             return Err(ProgramError::InvalidAccountData);
         }
         Ok(self)
     }
 
     fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError> {
-        if self.owner.ne(owner) {
+        if self.owner().ne(owner) {
             return Err(ProgramError::InvalidAccountOwner);
         }
         Ok(self)
     }
 
     fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError> {
-        if self.key.ne(&address) {
+        if self.key().ne(&address) {
             return Err(ProgramError::InvalidAccountData);
         }
         Ok(self)
@@ -71,7 +77,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
         program_id: &Pubkey,
     ) -> Result<&Self, ProgramError> {
         let pda = Pubkey::find_program_address(seeds, program_id);
-        if self.key.ne(&pda.0) || bump.ne(&pda.1) {
+        if self.key().ne(&pda.0) || bump.ne(&pda.1) {
             return Err(ProgramError::InvalidSeeds);
         }
         Ok(self)
@@ -83,7 +89,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     }
 }
 
-impl ToAccount for AccountInfo<'_> {
+impl ToAccount for NoStdAccountInfo {
     fn to_account<T: AccountDeserialize + Discriminator + Pod>(
         &self,
         program_id: &Pubkey,
@@ -91,7 +97,9 @@ impl ToAccount for AccountInfo<'_> {
         unsafe {
             self.has_owner(program_id)?;
             T::try_from_bytes(std::slice::from_raw_parts(
-                self.try_borrow_data()?.as_ptr(),
+                self.try_borrow_data()
+                    .ok_or(ProgramError::AccountBorrowFailed)?
+                    .as_ptr(),
                 8 + std::mem::size_of::<T>(),
             ))
         }
@@ -101,11 +109,15 @@ impl ToAccount for AccountInfo<'_> {
         &self,
         program_id: &Pubkey,
     ) -> Result<&mut T, ProgramError> {
-        self.is_writable()?;
+        if !self.is_writable() {
+            return Err(ProgramError::AccountBorrowFailed);
+        }
         unsafe {
             self.has_owner(program_id)?;
             T::try_from_bytes_mut(std::slice::from_raw_parts_mut(
-                self.try_borrow_mut_data()?.as_mut_ptr(),
+                self.try_borrow_mut_data()
+                    .ok_or(ProgramError::AccountBorrowFailed)?
+                    .as_mut_ptr(),
                 8 + std::mem::size_of::<T>(),
             ))
         }
@@ -113,12 +125,14 @@ impl ToAccount for AccountInfo<'_> {
 }
 
 #[cfg(feature = "spl")]
-impl ToSplToken for AccountInfo<'_> {
+impl crate::ToSplToken for NoStdAccountInfo {
     fn to_mint(&self) -> Result<spl_token::state::Mint, ProgramError> {
         unsafe {
             self.has_owner(&spl_token::ID)?;
             spl_token::state::Mint::unpack(std::slice::from_raw_parts(
-                self.try_borrow_data()?.as_ptr(),
+                self.try_borrow_data()
+                    .ok_or(ProgramError::AccountBorrowFailed)?
+                    .as_ptr(),
                 spl_token::state::Mint::LEN,
             ))
         }
@@ -127,7 +141,9 @@ impl ToSplToken for AccountInfo<'_> {
         unsafe {
             self.has_owner(&spl_token::ID)?;
             spl_token::state::Account::unpack(std::slice::from_raw_parts(
-                self.try_borrow_data()?.as_ptr(),
+                self.try_borrow_data()
+                    .ok_or(ProgramError::AccountBorrowFailed)?
+                    .as_ptr(),
                 spl_token::state::Account::LEN,
             ))
         }
@@ -141,45 +157,5 @@ impl ToSplToken for AccountInfo<'_> {
             owner, mint,
         ))?
         .to_token_account()
-    }
-}
-
-#[cfg(feature = "spl")]
-impl AccountValidation for spl_token::state::Mint {
-    fn check<F>(&self, condition: F) -> Result<&Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool,
-    {
-        if !condition(self) {
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
-        }
-        Ok(self)
-    }
-
-    fn check_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool,
-    {
-        panic!("not implemented")
-    }
-}
-
-#[cfg(feature = "spl")]
-impl AccountValidation for spl_token::state::Account {
-    fn check<F>(&self, condition: F) -> Result<&Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool,
-    {
-        if !condition(self) {
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
-        }
-        Ok(self)
-    }
-
-    fn check_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool,
-    {
-        panic!("not implemented")
     }
 }

@@ -1,0 +1,22 @@
+[package]
+name = "example-1-program-nostd"
+description = "Example program 1 -- nostd"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+repository.workspace = true
+keywords.workspace = true
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+default = []
+
+[dependencies]
+example-1-api.workspace = true
+solana-program.workspace = true
+steel = { workspace = true }
+
