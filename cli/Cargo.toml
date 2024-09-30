@@ -19,7 +19,9 @@ default = []
 admin = []
 
 [dependencies]
+anyhow.workspace = true
 clap.workspace = true
+clap_v3.workspace = true
 colored.workspace = true
 indicatif.workspace = true 
 git2.workspace = true
@@ -27,3 +29,6 @@ prettyplease.workspace = true
 syn.workspace = true
 tokio.workspace = true
 quote.workspace = true
+solana-sdk.workspace = true
+solana-cli-config.workspace = true
+solana-clap-v3-utils.workspace = true

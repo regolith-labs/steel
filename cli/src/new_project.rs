@@ -7,12 +7,13 @@ use crate::{
     NewArgs,
 };
 
-pub fn new_project(args: NewArgs) {
+pub fn new_project(args: NewArgs) -> anyhow::Result<()> {
     let project_name = args.name.to_ascii_lowercase();
     let base_path = Path::new(&project_name);
-    stub_workspace(base_path, &project_name).unwrap();
-    stub_api(base_path, &project_name).unwrap();
-    stub_program(base_path, &project_name).unwrap();
+    stub_workspace(base_path, &project_name)?;
+    stub_api(base_path, &project_name)?;
+    stub_program(base_path, &project_name)?;
+    Ok(())
 }
 
 fn stub_workspace(base_path: &Path, project_name: &String) -> io::Result<()> {
