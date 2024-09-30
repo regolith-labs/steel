@@ -14,14 +14,19 @@ keywords = ["solana"]
 
 [workspace.dependencies]
 bytemuck = "1.14"
-clap = { features = ["derive"], version = "4.4" }
+clap = { features = ["derive", "env"], version = "4.4" }
+clap_v3 = { version = "3", package = "clap" }
+anyhow = "1"
 colored = "2.0"
 git2 = "0.16"
 indicatif = "0.17"
 num_enum = "0.7"
 prettyplease = "0.2"
 syn = { features = ["full"], version = "2.0" }
+solana-clap-v3-utils = "^1.18"
+solana-cli-config = "^1.18"
 solana-program = "^1.18"
+solana-sdk = "^1.18"
 spl-token = { features = ["no-entrypoint"], version = "^4" }
 spl-associated-token-account = { features = [ "no-entrypoint" ], version = "^2.3" } 
 thiserror = "1.0.57"
