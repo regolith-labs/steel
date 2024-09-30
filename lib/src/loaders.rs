@@ -3,7 +3,7 @@ use bytemuck::Pod;
 use solana_program::program_pack::Pack;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{AccountDeserialize, AccountInfoValidation, Discriminator, ToAccount};
+use crate::{AccountDeserialize, AccountInfoValidation, AsProgramAccount, Discriminator};
 #[cfg(feature = "spl")]
 use crate::{AccountValidation, ToSplToken};
 
@@ -81,11 +81,11 @@ impl AccountInfoValidation for AccountInfo<'_> {
     }
 }
 
-impl ToAccount for AccountInfo<'_> {
-    fn to_account<T: AccountDeserialize + Discriminator + Pod>(
-        &self,
-        program_id: &Pubkey,
-    ) -> Result<&T, ProgramError> {
+impl<T> AsProgramAccount<T> for AccountInfo<'_>
+where
+    T: AccountDeserialize + Discriminator + Pod,
+{
+    fn as_program_account(&self, program_id: &Pubkey) -> Result<&T, ProgramError> {
         unsafe {
             self.has_owner(program_id)?;
             T::try_from_bytes(std::slice::from_raw_parts(
@@ -95,11 +95,7 @@ impl ToAccount for AccountInfo<'_> {
         }
     }
 
-    fn to_account_mut<T: AccountDeserialize + Discriminator + Pod>(
-        &self,
-        program_id: &Pubkey,
-    ) -> Result<&mut T, ProgramError> {
-        self.is_writable()?;
+    fn as_program_account_mut(&mut self, program_id: &Pubkey) -> Result<&mut T, ProgramError> {
         unsafe {
             self.has_owner(program_id)?;
             T::try_from_bytes_mut(std::slice::from_raw_parts_mut(
