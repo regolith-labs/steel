@@ -14,7 +14,7 @@ where
         if Self::discriminator().ne(&data[0]) {
             return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
-        bytemuck::try_from_bytes::<Self>(&data[8..]).or(Err(
+        bytemuck::try_from_bytes(&data[8..]).or(Err(
             solana_program::program_error::ProgramError::InvalidAccountData,
         ))
     }
@@ -23,49 +23,69 @@ where
         if Self::discriminator().ne(&data[0]) {
             return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
-        bytemuck::try_from_bytes_mut::<Self>(&mut data[8..]).or(Err(
+        bytemuck::try_from_bytes_mut(&mut data[8..]).or(Err(
             solana_program::program_error::ProgramError::InvalidAccountData,
         ))
     }
 }
 
-/// Account data is sometimes stored via a header and body type,
-/// where the former resolves the type of the latter (e.g. merkle trees with a generic size const).
-/// This trait parses a header type from the first N bytes of some data, and returns the remaining
-/// bytes, which are then available for further processing.
-///
-/// See module-level tests for example usage.
-pub trait AccountHeaderDeserialize {
-    fn try_header_from_bytes(data: &[u8]) -> Result<(&Self, &[u8]), ProgramError>;
-    fn try_header_from_bytes_mut(data: &mut [u8]) -> Result<(&mut Self, &mut [u8]), ProgramError>;
+pub trait MapHeader {
+    fn map_header<'a, R>(
+        data: &'a [u8],
+        f: impl Fn(&'a Self, &'a [u8]) -> Result<R, ProgramError>,
+    ) -> Result<R, ProgramError>
+    where
+        Self: 'a;
+    fn map_header_mut<'a, R>(
+        data: &'a mut [u8],
+        f: impl Fn(&'a mut Self, &'a mut [u8]) -> Result<R, ProgramError>,
+    ) -> Result<R, ProgramError>
+    where
+        Self: 'a;
 }
 
-impl<T> AccountHeaderDeserialize for T
+impl<T> MapHeader for T
 where
-    T: Discriminator + Pod,
+    T: AccountDeserialize,
 {
-    fn try_header_from_bytes(data: &[u8]) -> Result<(&Self, &[u8]), ProgramError> {
-        if Self::discriminator().ne(&data[0]) {
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
-        }
-        let (prefix, remainder) = data[8..].split_at(std::mem::size_of::<T>());
-        Ok((
-            bytemuck::try_from_bytes::<Self>(prefix).or(Err(
-                solana_program::program_error::ProgramError::InvalidAccountData,
-            ))?,
-            remainder,
-        ))
+    fn map_header<'a, R>(
+        data: &'a [u8],
+        f: impl Fn(&'a Self, &'a [u8]) -> Result<R, ProgramError>,
+    ) -> Result<R, ProgramError>
+    where
+        Self: 'a,
+    {
+        let (header_bytes, remainder) = data.split_at(8 + std::mem::size_of::<Self>());
+        Self::try_from_bytes(header_bytes).and_then(|t| f(t, remainder))
     }
 
-    fn try_header_from_bytes_mut(data: &mut [u8]) -> Result<(&mut Self, &mut [u8]), ProgramError> {
-        let (prefix, remainder) = data[8..].split_at_mut(std::mem::size_of::<T>());
-        Ok((
-            bytemuck::try_from_bytes_mut::<Self>(prefix).or(Err(
-                solana_program::program_error::ProgramError::InvalidAccountData,
-            ))?,
-            remainder,
-        ))
+    fn map_header_mut<'a, R>(
+        data: &'a mut [u8],
+        f: impl Fn(&'a mut Self, &'a mut [u8]) -> Result<R, ProgramError>,
+    ) -> Result<R, ProgramError>
+    where
+        Self: 'a,
+    {
+        let (header_bytes, remainder) = data.split_at_mut(8 + std::mem::size_of::<Self>());
+        Self::try_from_bytes_mut(header_bytes).and_then(|t| f(t, remainder))
     }
+}
+
+pub trait FromHeader<'a, H: AccountDeserialize + 'a>: Sized {
+    fn from_account_header(data: &'a [u8]) -> Result<Self, ProgramError> {
+        let (header_bytes, remainder) = data.split_at(8 + std::mem::size_of::<H>());
+        H::try_from_bytes(header_bytes).and_then(|t| Self::try_from_header(t, remainder))
+    }
+
+    fn try_from_header(header: &'a H, data: &'a [u8]) -> Result<Self, ProgramError>;
+}
+pub trait FromAccountHeaderMut<'a, H: AccountDeserialize + 'a>: Sized {
+    fn from_account_header_mut(data: &'a mut [u8]) -> Result<Self, ProgramError> {
+        let (header_bytes, remainder) = data.split_at_mut(8 + std::mem::size_of::<H>());
+        H::try_from_bytes_mut(header_bytes).and_then(|t| Self::try_from_header_mut(t, remainder))
+    }
+
+    fn try_from_header_mut(header: &'a mut H, data: &'a mut [u8]) -> Result<Self, ProgramError>;
 }
 
 pub trait AccountValidation {
@@ -138,49 +158,115 @@ pub trait ProgramOwner {
 
 #[cfg(test)]
 mod tests {
+    use crate::{
+        try_cast_slice, try_cast_slice_mut, try_cast_slice_mut_with_remainder,
+        try_cast_slice_with_remainder,
+    };
+
     use super::*;
     use bytemuck::{Pod, Zeroable};
 
     #[repr(C)]
-    #[derive(Copy, Clone)]
-    struct GenericallySizedType<const N: usize> {
-        field: [u32; N],
+    #[derive(Default, Debug, Copy, Clone, Zeroable, Pod)]
+    struct SliceHeader {
+        some_metadata: [u8; 32],
+        num_players: u64,
+        num_mints: u64,
     }
 
-    unsafe impl<const N: usize> Zeroable for GenericallySizedType<N> {}
-    unsafe impl<const N: usize> Pod for GenericallySizedType<N> {}
-
-    #[repr(C)]
-    #[derive(Copy, Clone, Zeroable, Pod)]
-    struct GenericallySizedTypeHeader {
-        field_len: u64,
+    impl SliceHeader {
+        pub fn total_required_size(&self) -> usize {
+            8 + std::mem::size_of::<Self>()
+                + std::mem::size_of::<Pubkey>() * self.num_mints as usize
+                + std::mem::size_of::<Pubkey>() * self.num_players as usize
+        }
     }
 
-    impl Discriminator for GenericallySizedTypeHeader {
+    impl Discriminator for SliceHeader {
         fn discriminator() -> u8 {
             0
         }
     }
 
+    #[repr(C)]
+    #[derive(Copy, Clone)]
+    struct SliceAccount<'a> {
+        header: &'a SliceHeader,
+        players: &'a [Pubkey],
+        mints: &'a [Pubkey],
+    }
+
+    // A mutable version of the above
+    #[repr(C)]
+    struct SliceAccountMut<'a> {
+        header: &'a mut SliceHeader,
+        players: &'a mut [Pubkey],
+        mints: &'a mut [Pubkey],
+    }
+
+    impl<'a> FromHeader<'a, SliceHeader> for SliceAccount<'a> {
+        fn try_from_header(header: &'a SliceHeader, data: &'a [u8]) -> Result<Self, ProgramError> {
+            let (players, data) = try_cast_slice_with_remainder(data, header.num_players as usize)?;
+            let mints = try_cast_slice(data, header.num_mints as usize)?;
+            Ok(Self {
+                header,
+                players,
+                mints,
+            })
+        }
+    }
+
+    impl<'a> FromAccountHeaderMut<'a, SliceHeader> for SliceAccountMut<'a> {
+        fn try_from_header_mut(
+            header: &'a mut SliceHeader,
+            data: &'a mut [u8],
+        ) -> Result<Self, ProgramError> {
+            let (players, data) =
+                try_cast_slice_mut_with_remainder(data, header.num_players as usize)?;
+            let mints = try_cast_slice_mut(data, header.num_mints as usize)?;
+            Ok(Self {
+                header,
+                players,
+                mints,
+            })
+        }
+    }
+
+    fn generate_slice_account(num_players: u64, num_mints: u64) -> Vec<u8> {
+        let header = SliceHeader {
+            some_metadata: [1u8; 32],
+            num_players,
+            num_mints,
+        };
+        let header_bytes = bytemuck::bytes_of(&header).to_vec();
+        let mut data = vec![0u8; header.total_required_size()];
+        data[8..header_bytes.len() + 8].copy_from_slice(&header_bytes);
+        data
+    }
+
     #[test]
     fn account_headers() {
-        let mut data = [0u8; 32];
-        data[8] = 4;
-        data[16] = 5;
-        let (_foo_header, foo) = GenericallySizedTypeHeader::try_header_from_bytes(&data)
-            .map(|(header, remainder)| {
-                let foo = match header.field_len {
-                    4 => bytemuck::try_from_bytes::<GenericallySizedType<4>>(remainder).unwrap(),
-                    x => panic!("{}", format!("unknown field len, {x}")),
-                };
-                (header, foo)
-            })
-            .unwrap();
-        assert_eq!(5, foo.field[0]);
+        let mut data = generate_slice_account(3, 2);
+        // Deserialize it
+        let foo = SliceAccount::from_account_header(&data).unwrap();
+        assert_eq!(2, foo.header.num_mints);
+        assert_eq!(3, foo.header.num_players);
+        assert_eq!(Pubkey::default(), foo.players[0]);
+        assert_eq!(Pubkey::default(), foo.mints[0]);
+
+        // Mutate it
+        let foo = SliceAccountMut::from_account_header_mut(&mut data).unwrap();
+        let new_player = Pubkey::new_unique();
+        foo.players[0] = new_player;
+        let new_mint = Pubkey::new_unique();
+        foo.mints[0] = new_mint;
+        let foo = SliceAccount::from_account_header(&data).unwrap();
+        assert_eq!(new_player, foo.players[0]);
+        assert_eq!(new_mint, foo.mints[0]);
     }
 
     #[repr(C)]
-    #[derive(Copy, Clone, Zeroable, Pod)]
+    #[derive(Debug, Copy, Clone, Zeroable, Pod)]
     struct TestType {
         field0: u64,
         field1: u64,
@@ -201,5 +287,11 @@ mod tests {
         let foo = TestType::try_from_bytes(&data).unwrap();
         assert_eq!(42, foo.field0);
         assert_eq!(43, foo.field1);
+
+        // Cast a slice of `TestType` (no discriminator)
+        let data_len = 5usize;
+        let mut data = vec![0u8; std::mem::size_of::<TestType>() * data_len];
+        let _: &[TestType] = try_cast_slice::<TestType>(&data, data_len).unwrap();
+        let _: &mut [TestType] = try_cast_slice_mut::<TestType>(&mut data, data_len).unwrap();
     }
 }
