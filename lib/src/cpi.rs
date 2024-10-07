@@ -151,6 +151,21 @@ pub fn allocate_account_with_bump<'a, 'info>(
     Ok(())
 }
 
+/// Closes an account and returns the remaining rent lamports to the provided recipient.
+pub fn close_account<'info>(
+    account_info: &AccountInfo<'info>,
+    recipient: &AccountInfo<'info>,
+) -> ProgramResult {
+    // Realloc data to zero.
+    account_info.realloc(0, true)?;
+
+    // Return rent lamports.
+    **recipient.lamports.borrow_mut() += account_info.lamports();
+    **account_info.lamports.borrow_mut() = 0;
+
+    Ok(())
+}
+
 #[cfg(feature = "spl")]
 #[inline(always)]
 pub fn create_associated_token_account<'info>(
