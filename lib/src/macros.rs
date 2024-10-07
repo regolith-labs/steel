@@ -21,34 +21,6 @@ macro_rules! impl_from_bytes {
 }
 
 #[macro_export]
-macro_rules! impl_account_from_bytes {
-    ($struct_name:ident) => {
-        impl $crate::AccountDeserialize for $struct_name {
-            fn try_from_bytes<'a>(
-                data: &'a [u8],
-            ) -> Result<&'a Self, solana_program::program_error::ProgramError> {
-                if Self::discriminator().ne(&data[0]) {
-                    return Err(solana_program::program_error::ProgramError::InvalidAccountData);
-                }
-                bytemuck::try_from_bytes::<Self>(&data[8..]).or(Err(
-                    solana_program::program_error::ProgramError::InvalidAccountData,
-                ))
-            }
-            fn try_from_bytes_mut<'a>(
-                data: &'a mut [u8],
-            ) -> Result<&'a mut Self, solana_program::program_error::ProgramError> {
-                if Self::discriminator().ne(&data[0]) {
-                    return Err(solana_program::program_error::ProgramError::InvalidAccountData);
-                }
-                bytemuck::try_from_bytes_mut::<Self>(&mut data[8..]).or(Err(
-                    solana_program::program_error::ProgramError::InvalidAccountData,
-                ))
-            }
-        }
-    };
-}
-
-#[macro_export]
 macro_rules! impl_instruction_from_bytes {
     ($struct_name:ident) => {
         impl $struct_name {
@@ -67,7 +39,6 @@ macro_rules! impl_instruction_from_bytes {
 macro_rules! account {
     ($discriminator_name:ident, $struct_name:ident) => {
         $crate::impl_to_bytes!($struct_name);
-        $crate::impl_account_from_bytes!($struct_name);
 
         impl $crate::Discriminator for $struct_name {
             fn discriminator() -> u8 {
