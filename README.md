@@ -9,7 +9,8 @@
 
 ## Todos
 
-- [ ] Simple lamport transfer function.
+- [ ] Helper function for simple lamport transfers between AccountInfos.
+- [ ] Helper function to close AccountInfos (wrap realloc and lamport return).
 - [ ] Helper function to emit events (wrap sol_log_data).
 - [ ] Custom error messages on account validation checks.
 - [ ] Localnet toolchain.
