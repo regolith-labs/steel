@@ -10,9 +10,10 @@
 ## Todos
 
 - [ ] Simple lamport transfer function.
-- [ ] Emit event helper (wrap sol_log_data).
-- [ ] IDL generation.
+- [ ] Helper function to emit events (wrap sol_log_data).
+- [ ] Custom error messages on account validation checks.
 - [ ] Localnet toolchain.
+- [ ] IDL generation.
 - [x] ~~CLI with init script.~~
 - [x] ~~Account parsers and validation.~~
 
