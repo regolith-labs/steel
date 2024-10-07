@@ -11,16 +11,37 @@ use crate::Discriminator;
 pub fn create_account<'a, 'info, T: Discriminator + Pod>(
     target_account: &'a AccountInfo<'info>,
     owner: &Pubkey,
-    seeds: &[&[u8]],
+    seeds: &[u8],
+    system_program: &'a AccountInfo<'info>,
+    payer: &'a AccountInfo<'info>,
+) -> ProgramResult {
+    create_account_with_bump::<T>(
+        target_account,
+        owner,
+        seeds,
+        Pubkey::find_program_address(&[seeds], owner).1,
+        system_program,
+        payer,
+    )
+}
+
+/// Creates a new program account with user-provided bump.
+#[inline(always)]
+pub fn create_account_with_bump<'a, 'info, T: Discriminator + Pod>(
+    target_account: &'a AccountInfo<'info>,
+    owner: &Pubkey,
+    seeds: &[u8],
+    bump: u8,
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
 ) -> ProgramResult {
     // Allocate space.
-    allocate_account(
+    allocate_account_with_bump(
         target_account,
         owner,
         8 + std::mem::size_of::<T>(),
         seeds,
+        bump,
         system_program,
         payer,
     )?;
@@ -38,7 +59,29 @@ pub fn allocate_account<'a, 'info>(
     target_account: &'a AccountInfo<'info>,
     owner: &Pubkey,
     space: usize,
-    seeds: &[&[u8]],
+    seeds: &[u8],
+    system_program: &'a AccountInfo<'info>,
+    payer: &'a AccountInfo<'info>,
+) -> ProgramResult {
+    allocate_account_with_bump(
+        target_account,
+        owner,
+        space,
+        seeds,
+        Pubkey::find_program_address(&[seeds], owner).1,
+        system_program,
+        payer,
+    )
+}
+
+/// Allocates space for a new program account with user-provided bump.
+#[inline(always)]
+pub fn allocate_account_with_bump<'a, 'info>(
+    target_account: &'a AccountInfo<'info>,
+    owner: &Pubkey,
+    space: usize,
+    seeds: &[u8],
+    bump: u8,
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
 ) -> ProgramResult {
@@ -58,7 +101,7 @@ pub fn allocate_account<'a, 'info>(
                 target_account.clone(),
                 system_program.clone(),
             ],
-            &[seeds],
+            &[&[seeds, &[bump]]],
         )?;
     } else {
         // Otherwise, if balance is nonzero:
@@ -86,14 +129,14 @@ pub fn allocate_account<'a, 'info>(
         solana_program::program::invoke_signed(
             &solana_program::system_instruction::allocate(target_account.key, space as u64),
             &[target_account.clone(), system_program.clone()],
-            &[seeds],
+            &[&[seeds, &[bump]]],
         )?;
 
         // 3) assign our program as the owner
         solana_program::program::invoke_signed(
             &solana_program::system_instruction::assign(target_account.key, owner),
             &[target_account.clone(), system_program.clone()],
-            &[seeds],
+            &[&[seeds, &[bump]]],
         )?;
     }
 
@@ -116,7 +159,7 @@ pub fn create_associated_token_account<'info>(
             funder_info.key,
             owner_info.key,
             mint_info.key,
-            &spl_token::id(),
+            &spl_token::ID,
         ),
         &[
             funder_info.clone(),
@@ -141,7 +184,7 @@ pub fn transfer<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token::instruction::transfer(
-            &spl_token::id(),
+            &spl_token::ID,
             from_info.key,
             to_info.key,
             authority_info.key,
@@ -169,7 +212,7 @@ pub fn transfer_signed<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke_signed(
         &spl_token::instruction::transfer(
-            &spl_token::id(),
+            &spl_token::ID,
             from_info.key,
             to_info.key,
             authority_info.key,
@@ -198,7 +241,7 @@ pub fn mint_to_signed<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke_signed(
         &spl_token::instruction::mint_to(
-            &spl_token::id(),
+            &spl_token::ID,
             mint_info.key,
             to_info.key,
             authority_info.key,
@@ -226,7 +269,7 @@ pub fn burn<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token::instruction::burn(
-            &spl_token::id(),
+            &spl_token::ID,
             token_account_info.key,
             mint_info.key,
             authority_info.key,
