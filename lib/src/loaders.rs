@@ -62,14 +62,9 @@ impl AccountInfoValidation for AccountInfo<'_> {
         Ok(self)
     }
 
-    fn has_seeds(
-        &self,
-        seeds: &[&[u8]],
-        bump: u8,
-        program_id: &Pubkey,
-    ) -> Result<&Self, ProgramError> {
+    fn has_seeds(&self, seeds: &[&[u8]], program_id: &Pubkey) -> Result<&Self, ProgramError> {
         let pda = Pubkey::find_program_address(seeds, program_id);
-        if self.key.ne(&pda.0) || bump.ne(&pda.1) {
+        if self.key.ne(&pda.0) {
             return Err(ProgramError::InvalidSeeds);
         }
         Ok(self)

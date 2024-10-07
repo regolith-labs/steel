@@ -11,7 +11,7 @@ use crate::Discriminator;
 pub fn create_account<'a, 'info, T: Discriminator + Pod>(
     target_account: &'a AccountInfo<'info>,
     owner: &Pubkey,
-    seeds: &[u8],
+    seeds: &[&[u8]],
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
 ) -> ProgramResult {
@@ -19,7 +19,7 @@ pub fn create_account<'a, 'info, T: Discriminator + Pod>(
         target_account,
         owner,
         seeds,
-        Pubkey::find_program_address(&[seeds], owner).1,
+        Pubkey::find_program_address(seeds, owner).1,
         system_program,
         payer,
     )
@@ -30,7 +30,7 @@ pub fn create_account<'a, 'info, T: Discriminator + Pod>(
 pub fn create_account_with_bump<'a, 'info, T: Discriminator + Pod>(
     target_account: &'a AccountInfo<'info>,
     owner: &Pubkey,
-    seeds: &[u8],
+    seeds: &[&[u8]],
     bump: u8,
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
@@ -59,7 +59,7 @@ pub fn allocate_account<'a, 'info>(
     target_account: &'a AccountInfo<'info>,
     owner: &Pubkey,
     space: usize,
-    seeds: &[u8],
+    seeds: &[&[u8]],
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
 ) -> ProgramResult {
@@ -68,7 +68,7 @@ pub fn allocate_account<'a, 'info>(
         owner,
         space,
         seeds,
-        Pubkey::find_program_address(&[seeds], owner).1,
+        Pubkey::find_program_address(seeds, owner).1,
         system_program,
         payer,
     )
@@ -80,11 +80,19 @@ pub fn allocate_account_with_bump<'a, 'info>(
     target_account: &'a AccountInfo<'info>,
     owner: &Pubkey,
     space: usize,
-    seeds: &[u8],
+    seeds: &[&[u8]],
     bump: u8,
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
 ) -> ProgramResult {
+    // Combine seeds
+    let bump: &[u8] = &[bump];
+    let mut combined_seeds = Vec::with_capacity(seeds.len() + 1);
+    combined_seeds.extend_from_slice(seeds);
+    combined_seeds.push(bump);
+    let seeds = combined_seeds.as_slice();
+
+    // Allocate space for account
     let rent = Rent::get()?;
     if target_account.lamports().eq(&0) {
         // If balance is zero, create account
@@ -101,7 +109,7 @@ pub fn allocate_account_with_bump<'a, 'info>(
                 target_account.clone(),
                 system_program.clone(),
             ],
-            &[&[seeds, &[bump]]],
+            &[seeds],
         )?;
     } else {
         // Otherwise, if balance is nonzero:
@@ -129,14 +137,14 @@ pub fn allocate_account_with_bump<'a, 'info>(
         solana_program::program::invoke_signed(
             &solana_program::system_instruction::allocate(target_account.key, space as u64),
             &[target_account.clone(), system_program.clone()],
-            &[&[seeds, &[bump]]],
+            &[seeds],
         )?;
 
         // 3) assign our program as the owner
         solana_program::program::invoke_signed(
             &solana_program::system_instruction::assign(target_account.key, owner),
             &[target_account.clone(), system_program.clone()],
-            &[&[seeds, &[bump]]],
+            &[seeds],
         )?;
     }
 

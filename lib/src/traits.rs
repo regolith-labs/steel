@@ -26,12 +26,7 @@ pub trait AccountInfoValidation {
     fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError>;
     fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError>;
     fn has_owner(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn has_seeds(
-        &self,
-        seeds: &[&[u8]],
-        bump: u8,
-        program_id: &Pubkey,
-    ) -> Result<&Self, ProgramError>;
+    fn has_seeds(&self, seeds: &[&[u8]], program_id: &Pubkey) -> Result<&Self, ProgramError>;
 }
 
 pub trait Discriminator {
