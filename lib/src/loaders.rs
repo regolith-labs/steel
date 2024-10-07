@@ -5,7 +5,7 @@ use solana_program::{account_info::AccountInfo, program_error::ProgramError, pub
 
 use crate::{AccountDeserialize, AccountInfoValidation, AsProgramAccount, Discriminator};
 #[cfg(feature = "spl")]
-use crate::{AccountValidation, ToSplToken};
+use crate::{AccountValidation, AsSplToken};
 
 impl AccountInfoValidation for AccountInfo<'_> {
     fn is_signer(&self) -> Result<&Self, ProgramError> {
@@ -102,8 +102,8 @@ where
 }
 
 #[cfg(feature = "spl")]
-impl ToSplToken for AccountInfo<'_> {
-    fn to_mint(&self) -> Result<spl_token::state::Mint, ProgramError> {
+impl AsSplToken for AccountInfo<'_> {
+    fn as_mint(&self) -> Result<spl_token::state::Mint, ProgramError> {
         unsafe {
             self.has_owner(&spl_token::ID)?;
             spl_token::state::Mint::unpack(std::slice::from_raw_parts(
@@ -112,7 +112,7 @@ impl ToSplToken for AccountInfo<'_> {
             ))
         }
     }
-    fn to_token_account(&self) -> Result<spl_token::state::Account, ProgramError> {
+    fn as_token_account(&self) -> Result<spl_token::state::Account, ProgramError> {
         unsafe {
             self.has_owner(&spl_token::ID)?;
             spl_token::state::Account::unpack(std::slice::from_raw_parts(
@@ -121,7 +121,7 @@ impl ToSplToken for AccountInfo<'_> {
             ))
         }
     }
-    fn to_associated_token_account(
+    fn as_associated_token_account(
         &self,
         owner: &Pubkey,
         mint: &Pubkey,

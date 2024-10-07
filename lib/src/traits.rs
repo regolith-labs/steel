@@ -106,10 +106,10 @@ pub trait AsProgramAccount<T> {
 }
 
 #[cfg(feature = "spl")]
-pub trait ToSplToken {
-    fn to_mint(&self) -> Result<spl_token::state::Mint, ProgramError>;
-    fn to_token_account(&self) -> Result<spl_token::state::Account, ProgramError>;
-    fn to_associated_token_account(
+pub trait AsSplToken {
+    fn as_mint(&self) -> Result<spl_token::state::Mint, ProgramError>;
+    fn as_token_account(&self) -> Result<spl_token::state::Account, ProgramError>;
+    fn as_associated_token_account(
         &self,
         owner: &Pubkey,
         mint: &Pubkey,
