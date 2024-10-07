@@ -129,7 +129,7 @@ impl AsSplToken for AccountInfo<'_> {
         self.has_address(&spl_associated_token_account::get_associated_token_address(
             owner, mint,
         ))?
-        .to_token_account()
+        .as_token_account()
     }
 }
 

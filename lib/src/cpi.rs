@@ -1,7 +1,7 @@
 use bytemuck::Pod;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, pubkey::Pubkey, rent::Rent,
-    sysvar::Sysvar,
+    account_info::AccountInfo, entrypoint::ProgramResult, instruction::Instruction, pubkey::Pubkey,
+    rent::Rent, sysvar::Sysvar,
 };
 
 use crate::Discriminator;
@@ -152,6 +152,7 @@ pub fn allocate_account_with_bump<'a, 'info>(
 }
 
 /// Closes an account and returns the remaining rent lamports to the provided recipient.
+#[inline(always)]
 pub fn close_account<'info>(
     account_info: &AccountInfo<'info>,
     recipient: &AccountInfo<'info>,
@@ -164,6 +165,37 @@ pub fn close_account<'info>(
     **account_info.lamports.borrow_mut() = 0;
 
     Ok(())
+}
+
+/// Invokes a CPI with provided signer seeds and program id.
+#[inline(always)]
+pub fn invoke_signed<'info>(
+    instruction: &Instruction,
+    account_infos: &[AccountInfo<'info>],
+    seeds: &[&[u8]],
+    program_id: &Pubkey,
+) -> ProgramResult {
+    let bump = Pubkey::find_program_address(seeds, program_id).1;
+    invoke_signed_with_bump(instruction, account_infos, seeds, bump)
+}
+
+/// Invokes a CPI with the provided signer seeds and bump.
+#[inline(always)]
+pub fn invoke_signed_with_bump<'info>(
+    instruction: &Instruction,
+    account_infos: &[AccountInfo<'info>],
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    // Combine seeds
+    let bump: &[u8] = &[bump];
+    let mut combined_seeds = Vec::with_capacity(seeds.len() + 1);
+    combined_seeds.extend_from_slice(seeds);
+    combined_seeds.push(bump);
+    let seeds = combined_seeds.as_slice();
+
+    // Invoke CPI
+    solana_program::program::invoke_signed(instruction, account_infos, &[seeds])
 }
 
 #[cfg(feature = "spl")]
@@ -231,9 +263,32 @@ pub fn transfer_signed<'info>(
     to_info: &AccountInfo<'info>,
     token_program: &AccountInfo<'info>,
     amount: u64,
-    signer_seeds: &[&[&[u8]]],
+    seeds: &[&[u8]],
 ) -> ProgramResult {
-    solana_program::program::invoke_signed(
+    let bump = Pubkey::find_program_address(seeds, authority_info.owner).1;
+    transfer_signed_with_bump(
+        authority_info,
+        from_info,
+        to_info,
+        token_program,
+        amount,
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn transfer_signed_with_bump<'info>(
+    authority_info: &AccountInfo<'info>,
+    from_info: &AccountInfo<'info>,
+    to_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    amount: u64,
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    invoke_signed_with_bump(
         &spl_token::instruction::transfer(
             &spl_token::ID,
             from_info.key,
@@ -248,7 +303,8 @@ pub fn transfer_signed<'info>(
             to_info.clone(),
             authority_info.clone(),
         ],
-        signer_seeds,
+        seeds,
+        bump,
     )
 }
 
@@ -260,9 +316,32 @@ pub fn mint_to_signed<'info>(
     authority_info: &AccountInfo<'info>,
     token_program: &AccountInfo<'info>,
     amount: u64,
-    signer_seeds: &[&[&[u8]]],
+    seeds: &[&[u8]],
 ) -> ProgramResult {
-    solana_program::program::invoke_signed(
+    let bump = Pubkey::find_program_address(seeds, authority_info.owner).1;
+    mint_to_signed_with_bump(
+        mint_info,
+        to_info,
+        authority_info,
+        token_program,
+        amount,
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn mint_to_signed_with_bump<'info>(
+    mint_info: &AccountInfo<'info>,
+    to_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    amount: u64,
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    invoke_signed_with_bump(
         &spl_token::instruction::mint_to(
             &spl_token::ID,
             mint_info.key,
@@ -277,7 +356,8 @@ pub fn mint_to_signed<'info>(
             to_info.clone(),
             authority_info.clone(),
         ],
-        signer_seeds,
+        seeds,
+        bump,
     )
 }
 
@@ -305,5 +385,138 @@ pub fn burn<'info>(
             mint_info.clone(),
             authority_info.clone(),
         ],
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn burn_signed<'info>(
+    token_account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    amount: u64,
+    seeds: &[&[u8]],
+) -> ProgramResult {
+    let bump = Pubkey::find_program_address(seeds, authority_info.owner).1;
+    burn_signed_with_bump(
+        token_account_info,
+        mint_info,
+        authority_info,
+        token_program,
+        amount,
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn burn_signed_with_bump<'info>(
+    token_account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    amount: u64,
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    invoke_signed_with_bump(
+        &spl_token::instruction::burn(
+            &spl_token::ID,
+            token_account_info.key,
+            mint_info.key,
+            authority_info.key,
+            &[authority_info.key],
+            amount,
+        )?,
+        &[
+            token_program.clone(),
+            token_account_info.clone(),
+            mint_info.clone(),
+            authority_info.clone(),
+        ],
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn freeze<'info>(
+    account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    owner_info: &AccountInfo<'info>,
+    signer_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token::instruction::freeze_account(
+            &spl_token::ID,
+            account_info.key,
+            mint_info.key,
+            owner_info.key,
+            &[signer_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            account_info.clone(),
+            mint_info.clone(),
+            owner_info.clone(),
+            signer_info.clone(),
+        ],
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn freeze_signed<'info>(
+    account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    owner_info: &AccountInfo<'info>,
+    signer_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+) -> ProgramResult {
+    let bump = Pubkey::find_program_address(seeds, signer_info.owner).1;
+    freeze_signed_with_bump(
+        account_info,
+        mint_info,
+        owner_info,
+        signer_info,
+        token_program,
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn freeze_signed_with_bump<'info>(
+    account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    owner_info: &AccountInfo<'info>,
+    signer_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    invoke_signed_with_bump(
+        &spl_token::instruction::freeze_account(
+            &spl_token::ID,
+            account_info.key,
+            mint_info.key,
+            owner_info.key,
+            &[signer_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            account_info.clone(),
+            mint_info.clone(),
+            owner_info.clone(),
+            signer_info.clone(),
+        ],
+        seeds,
+        bump,
     )
 }
