@@ -9,6 +9,8 @@
 
 ## Todos
 
+- [ ] Simple lamport transfer function.
+- [ ] Emit event helper (wrap sol_log_data).
 - [ ] IDL generation.
 - [ ] Localnet toolchain.
 - [x] ~~CLI with init script.~~
