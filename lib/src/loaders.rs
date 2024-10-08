@@ -3,7 +3,7 @@ use bytemuck::Pod;
 use solana_program::program_pack::Pack;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{AccountDeserialize, AccountInfoValidation, AsProgramAccount, Discriminator};
+use crate::{AccountDeserialize, AccountInfoValidation, AsAccount, Discriminator};
 #[cfg(feature = "spl")]
 use crate::{AccountValidation, AsSplToken};
 
@@ -76,11 +76,11 @@ impl AccountInfoValidation for AccountInfo<'_> {
     }
 }
 
-impl<T> AsProgramAccount<T> for AccountInfo<'_>
-where
-    T: AccountDeserialize + Discriminator + Pod,
-{
-    fn as_program_account(&self, program_id: &Pubkey) -> Result<&T, ProgramError> {
+impl AsAccount for AccountInfo<'_> {
+    fn as_account<T>(&self, program_id: &Pubkey) -> Result<&T, ProgramError>
+    where
+        T: AccountDeserialize + Discriminator + Pod,
+    {
         unsafe {
             self.has_owner(program_id)?;
             T::try_from_bytes(std::slice::from_raw_parts(
@@ -90,7 +90,10 @@ where
         }
     }
 
-    fn as_program_account_mut(&mut self, program_id: &Pubkey) -> Result<&mut T, ProgramError> {
+    fn as_account_mut<T>(&self, program_id: &Pubkey) -> Result<&mut T, ProgramError>
+    where
+        T: AccountDeserialize + Discriminator + Pod,
+    {
         unsafe {
             self.has_owner(program_id)?;
             T::try_from_bytes_mut(std::slice::from_raw_parts_mut(
@@ -135,7 +138,7 @@ impl AsSplToken for AccountInfo<'_> {
 
 #[cfg(feature = "spl")]
 impl AccountValidation for spl_token::state::Mint {
-    fn check<F>(&self, condition: F) -> Result<&Self, ProgramError>
+    fn assert<F>(&self, condition: F) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
     {
@@ -145,7 +148,32 @@ impl AccountValidation for spl_token::state::Mint {
         Ok(self)
     }
 
-    fn check_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
+    fn assert_with_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool,
+    {
+        if let Err(err) = crate::assert_with_msg(
+            condition(self),
+            solana_program::program_error::ProgramError::InvalidAccountData,
+            msg,
+        ) {
+            return Err(err.into());
+        }
+        Ok(self)
+    }
+
+    fn assert_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool,
+    {
+        panic!("not implemented")
+    }
+
+    fn assert_mut_with_msg<F>(
+        &mut self,
+        _condition: F,
+        _msg: &str,
+    ) -> Result<&mut Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
     {
@@ -155,7 +183,7 @@ impl AccountValidation for spl_token::state::Mint {
 
 #[cfg(feature = "spl")]
 impl AccountValidation for spl_token::state::Account {
-    fn check<F>(&self, condition: F) -> Result<&Self, ProgramError>
+    fn assert<F>(&self, condition: F) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
     {
@@ -165,7 +193,32 @@ impl AccountValidation for spl_token::state::Account {
         Ok(self)
     }
 
-    fn check_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
+    fn assert_with_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool,
+    {
+        if let Err(err) = crate::assert_with_msg(
+            condition(self),
+            solana_program::program_error::ProgramError::InvalidAccountData,
+            msg,
+        ) {
+            return Err(err.into());
+        }
+        Ok(self)
+    }
+
+    fn assert_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool,
+    {
+        panic!("not implemented")
+    }
+
+    fn assert_mut_with_msg<F>(
+        &mut self,
+        _condition: F,
+        _msg: &str,
+    ) -> Result<&mut Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
     {

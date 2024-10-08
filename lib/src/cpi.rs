@@ -520,3 +520,85 @@ pub fn freeze_signed_with_bump<'info>(
         bump,
     )
 }
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn initialize_mint<'info>(
+    mint_info: &AccountInfo<'info>,
+    mint_authority_info: &AccountInfo<'info>,
+    freeze_authority_info: Option<&AccountInfo<'info>>,
+    token_program: &AccountInfo<'info>,
+    rent_sysvar: &AccountInfo<'info>,
+    decimals: u8,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token::instruction::initialize_mint(
+            &spl_token::ID,
+            mint_info.key,
+            mint_authority_info.key,
+            freeze_authority_info.map(|i| i.key),
+            decimals,
+        )?,
+        &[
+            token_program.clone(),
+            mint_info.clone(),
+            mint_authority_info.clone(),
+            rent_sysvar.clone(),
+        ],
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn initialize_mint_signed<'info>(
+    mint_info: &AccountInfo<'info>,
+    mint_authority_info: &AccountInfo<'info>,
+    freeze_authority_info: Option<&AccountInfo<'info>>,
+    token_program: &AccountInfo<'info>,
+    rent_sysvar: &AccountInfo<'info>,
+    decimals: u8,
+    seeds: &[&[u8]],
+) -> ProgramResult {
+    let bump = Pubkey::find_program_address(seeds, mint_info.owner).1;
+    initialize_mint_signed_with_bump(
+        mint_info,
+        mint_authority_info,
+        freeze_authority_info,
+        token_program,
+        rent_sysvar,
+        decimals,
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn initialize_mint_signed_with_bump<'info>(
+    mint_info: &AccountInfo<'info>,
+    mint_authority_info: &AccountInfo<'info>,
+    freeze_authority_info: Option<&AccountInfo<'info>>,
+    token_program: &AccountInfo<'info>,
+    rent_sysvar: &AccountInfo<'info>,
+    decimals: u8,
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    invoke_signed_with_bump(
+        &spl_token::instruction::initialize_mint(
+            &spl_token::ID,
+            mint_info.key,
+            mint_authority_info.key,
+            freeze_authority_info.map(|i| i.key),
+            decimals,
+        )?,
+        &[
+            token_program.clone(),
+            mint_info.clone(),
+            mint_authority_info.clone(),
+            rent_sysvar.clone(),
+        ],
+        seeds,
+        bump,
+    )
+}

@@ -1,4 +1,6 @@
-use solana_program::{program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{
+    entrypoint::ProgramResult, log::sol_log, program_error::ProgramError, pubkey::Pubkey,
+};
 
 /// Parses an instruction from the instruction data.
 pub fn parse_instruction<'a, T: std::convert::TryFrom<u8>>(
@@ -21,4 +23,16 @@ pub fn parse_instruction<'a, T: std::convert::TryFrom<u8>>(
 
     // Return
     Ok((ix, data))
+}
+
+#[track_caller]
+#[inline(always)]
+pub fn assert_with_msg(v: bool, err: impl Into<ProgramError>, msg: &str) -> ProgramResult {
+    if v {
+        Ok(())
+    } else {
+        let caller = std::panic::Location::caller();
+        sol_log(format!("{}. \n{}", msg, caller).as_str());
+        Err(err.into())
+    }
 }

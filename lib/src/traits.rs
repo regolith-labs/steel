@@ -69,11 +69,23 @@ where
 }
 
 pub trait AccountValidation {
-    fn check<F>(&self, condition: F) -> Result<&Self, ProgramError>
+    fn assert<F>(&self, condition: F) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool;
 
-    fn check_mut<F>(&mut self, condition: F) -> Result<&mut Self, ProgramError>
+    fn assert_mut<F>(&mut self, condition: F) -> Result<&mut Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool;
+
+    fn assert_with_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool;
+
+    fn assert_mut_with_msg<F>(
+        &mut self,
+        condition: F,
+        msg: &str,
+    ) -> Result<&mut Self, ProgramError>
     where
         F: Fn(&Self) -> bool;
 }
@@ -99,10 +111,14 @@ pub trait Discriminator {
 /// 1. Program owner check
 /// 2. Discriminator byte check
 /// 3. Checked bytemuck conversion of account data to &T or &mut T.
-pub trait AsProgramAccount<T> {
-    fn as_program_account(&self, program_id: &Pubkey) -> Result<&T, ProgramError>;
+pub trait AsAccount {
+    fn as_account<T>(&self, program_id: &Pubkey) -> Result<&T, ProgramError>
+    where
+        T: AccountDeserialize + Discriminator + Pod;
 
-    fn as_program_account_mut(&mut self, program_id: &Pubkey) -> Result<&mut T, ProgramError>;
+    fn as_account_mut<T>(&self, program_id: &Pubkey) -> Result<&mut T, ProgramError>
+    where
+        T: AccountDeserialize + Discriminator + Pod;
 }
 
 #[cfg(feature = "spl")]

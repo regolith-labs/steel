@@ -47,7 +47,7 @@ macro_rules! account {
         }
 
         impl $crate::AccountValidation for $struct_name {
-            fn check<F>(
+            fn assert<F>(
                 &self,
                 condition: F,
             ) -> Result<&Self, solana_program::program_error::ProgramError>
@@ -59,7 +59,24 @@ macro_rules! account {
                 }
                 Ok(self)
             }
-            fn check_mut<F>(
+            fn assert_with_msg<F>(
+                &self,
+                condition: F,
+                msg: &str,
+            ) -> Result<&Self, solana_program::program_error::ProgramError>
+            where
+                F: Fn(&Self) -> bool,
+            {
+                if let Err(err) = $crate::assert_with_msg(
+                    condition(self),
+                    solana_program::program_error::ProgramError::InvalidAccountData,
+                    msg,
+                ) {
+                    return Err(err.into());
+                }
+                Ok(self)
+            }
+            fn assert_mut<F>(
                 &mut self,
                 condition: F,
             ) -> Result<&mut Self, solana_program::program_error::ProgramError>
@@ -68,6 +85,23 @@ macro_rules! account {
             {
                 if !condition(self) {
                     return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+                }
+                Ok(self)
+            }
+            fn assert_mut_with_msg<F>(
+                &mut self,
+                condition: F,
+                msg: &str,
+            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+            where
+                F: Fn(&Self) -> bool,
+            {
+                if let Err(err) = $crate::assert_with_msg(
+                    condition(self),
+                    solana_program::program_error::ProgramError::InvalidAccountData,
+                    msg,
+                ) {
+                    return Err(err.into());
                 }
                 Ok(self)
             }
