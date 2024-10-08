@@ -20,14 +20,17 @@
 
 ## Getting started
 
-To build with Steel, add it to your workspace dependencies:
-
+To start building with Steel, install the CLI:
 ```sh
-cargo add steel
+cargo install steel-cli
+```
+
+Spin up a new project with `new` command:
+```sh
+steel new my-project
 ```
 
 To compile your program, use the standard Solana toolchain:
-
 ```sh
 cargo build-sbf
 ```
