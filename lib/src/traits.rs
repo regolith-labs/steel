@@ -29,63 +29,31 @@ where
     }
 }
 
-pub trait MapHeader {
-    fn map_header<'a, R>(
-        data: &'a [u8],
-        f: impl Fn(&'a Self, &'a [u8]) -> Result<R, ProgramError>,
-    ) -> Result<R, ProgramError>
-    where
-        Self: 'a;
-    fn map_header_mut<'a, R>(
-        data: &'a mut [u8],
-        f: impl Fn(&'a mut Self, &'a mut [u8]) -> Result<R, ProgramError>,
-    ) -> Result<R, ProgramError>
-    where
-        Self: 'a;
-}
-
-impl<T> MapHeader for T
-where
-    T: AccountDeserialize,
-{
-    fn map_header<'a, R>(
-        data: &'a [u8],
-        f: impl Fn(&'a Self, &'a [u8]) -> Result<R, ProgramError>,
-    ) -> Result<R, ProgramError>
-    where
-        Self: 'a,
-    {
-        let (header_bytes, remainder) = data.split_at(8 + std::mem::size_of::<Self>());
-        Self::try_from_bytes(header_bytes).and_then(|t| f(t, remainder))
-    }
-
-    fn map_header_mut<'a, R>(
-        data: &'a mut [u8],
-        f: impl Fn(&'a mut Self, &'a mut [u8]) -> Result<R, ProgramError>,
-    ) -> Result<R, ProgramError>
-    where
-        Self: 'a,
-    {
-        let (header_bytes, remainder) = data.split_at_mut(8 + std::mem::size_of::<Self>());
-        Self::try_from_bytes_mut(header_bytes).and_then(|t| f(t, remainder))
-    }
-}
-
+/// Interface for using header data to parse the remainder of an account's bytes.
 pub trait FromHeader<'a, H: AccountDeserialize + 'a>: Sized {
-    fn from_account_header(data: &'a [u8]) -> Result<Self, ProgramError> {
+    /// Defines how to get a [Self] from a header H and any remaining bytes.
+    /// You define this, but you do not call it directly.
+    /// Use [FromHeader::from_account_data].
+    fn try_from_header(header: &'a H, data: &'a [u8]) -> Result<Self, ProgramError>;
+
+    /// Convert raw data to the underlying data type
+    fn from_account_data(data: &'a [u8]) -> Result<Self, ProgramError> {
         let (header_bytes, remainder) = data.split_at(8 + std::mem::size_of::<H>());
         H::try_from_bytes(header_bytes).and_then(|t| Self::try_from_header(t, remainder))
     }
-
-    fn try_from_header(header: &'a H, data: &'a [u8]) -> Result<Self, ProgramError>;
 }
-pub trait FromAccountHeaderMut<'a, H: AccountDeserialize + 'a>: Sized {
-    fn from_account_header_mut(data: &'a mut [u8]) -> Result<Self, ProgramError> {
+
+/// Mutable version of [FromHeader].
+pub trait FromHeaderMut<'a, H: AccountDeserialize + 'a>: Sized {
+    /// Defines how to get a [Self] from mutable acces to a header H and any remaining bytes.
+    /// You define this, but you do not call it directly.
+    /// Use [FromHeaderMut::from_account_data_mut].
+    fn try_from_header_mut(header: &'a mut H, data: &'a mut [u8]) -> Result<Self, ProgramError>;
+
+    fn from_account_data_mut(data: &'a mut [u8]) -> Result<Self, ProgramError> {
         let (header_bytes, remainder) = data.split_at_mut(8 + std::mem::size_of::<H>());
         H::try_from_bytes_mut(header_bytes).and_then(|t| Self::try_from_header_mut(t, remainder))
     }
-
-    fn try_from_header_mut(header: &'a mut H, data: &'a mut [u8]) -> Result<Self, ProgramError>;
 }
 
 pub trait AccountValidation {
@@ -166,6 +134,8 @@ mod tests {
     use super::*;
     use bytemuck::{Pod, Zeroable};
 
+    /// Some [Pod] data that stores the lengths of two fixed-size arrays whose lengths
+    /// could differ across different accounts.
     #[repr(C)]
     #[derive(Default, Debug, Copy, Clone, Zeroable, Pod)]
     struct SliceHeader {
@@ -188,6 +158,8 @@ mod tests {
         }
     }
 
+    /// Some [Pod] data paired with two [Pubkey] collections, accessed as slices.
+    /// The header stores the expected length of both collections.
     #[repr(C)]
     #[derive(Copy, Clone)]
     struct SliceAccount<'a> {
@@ -196,7 +168,7 @@ mod tests {
         mints: &'a [Pubkey],
     }
 
-    // A mutable version of the above
+    // A mutable version of [SliceAccount].
     #[repr(C)]
     struct SliceAccountMut<'a> {
         header: &'a mut SliceHeader,
@@ -204,6 +176,7 @@ mod tests {
         mints: &'a mut [Pubkey],
     }
 
+    // This feels very "macro"-able
     impl<'a> FromHeader<'a, SliceHeader> for SliceAccount<'a> {
         fn try_from_header(header: &'a SliceHeader, data: &'a [u8]) -> Result<Self, ProgramError> {
             let (players, data) = try_cast_slice_with_remainder(data, header.num_players as usize)?;
@@ -216,7 +189,7 @@ mod tests {
         }
     }
 
-    impl<'a> FromAccountHeaderMut<'a, SliceHeader> for SliceAccountMut<'a> {
+    impl<'a> FromHeaderMut<'a, SliceHeader> for SliceAccountMut<'a> {
         fn try_from_header_mut(
             header: &'a mut SliceHeader,
             data: &'a mut [u8],
@@ -247,20 +220,20 @@ mod tests {
     #[test]
     fn account_headers() {
         let mut data = generate_slice_account(3, 2);
-        // Deserialize it
-        let foo = SliceAccount::from_account_header(&data).unwrap();
-        assert_eq!(2, foo.header.num_mints);
+        // Deserialize works?
+        let foo = SliceAccount::from_account_data(&data).unwrap();
         assert_eq!(3, foo.header.num_players);
+        assert_eq!(2, foo.header.num_mints);
         assert_eq!(Pubkey::default(), foo.players[0]);
         assert_eq!(Pubkey::default(), foo.mints[0]);
 
-        // Mutate it
-        let foo = SliceAccountMut::from_account_header_mut(&mut data).unwrap();
+        // Mutation works?
+        let foo = SliceAccountMut::from_account_data_mut(&mut data).unwrap();
         let new_player = Pubkey::new_unique();
         foo.players[0] = new_player;
         let new_mint = Pubkey::new_unique();
         foo.mints[0] = new_mint;
-        let foo = SliceAccount::from_account_header(&data).unwrap();
+        let foo = SliceAccount::from_account_data(&data).unwrap();
         assert_eq!(new_player, foo.players[0]);
         assert_eq!(new_mint, foo.mints[0]);
     }
@@ -292,6 +265,48 @@ mod tests {
         let data_len = 5usize;
         let mut data = vec![0u8; std::mem::size_of::<TestType>() * data_len];
         let _: &[TestType] = try_cast_slice::<TestType>(&data, data_len).unwrap();
-        let _: &mut [TestType] = try_cast_slice_mut::<TestType>(&mut data, data_len).unwrap();
+        let foo: &mut [TestType] = try_cast_slice_mut::<TestType>(&mut data, data_len).unwrap();
+        foo[4].field0 = 123;
+        let foo: &[TestType] = try_cast_slice::<TestType>(&data, data_len).unwrap();
+        assert_eq!(foo[4].field0, 123);
+    }
+
+    #[derive(Debug, Clone)]
+    struct SliceAccountOwned {
+        header: SliceHeader,
+        players: Vec<Pubkey>,
+        mints: Vec<Pubkey>,
+    }
+
+    impl<'a> FromHeader<'a, SliceHeader> for SliceAccountOwned {
+        fn try_from_header(header: &'a SliceHeader, data: &'a [u8]) -> Result<Self, ProgramError> {
+            let borrowed: SliceAccount<'a> = SliceAccount::try_from_header(header, data)?;
+            Ok(Self {
+                header: *borrowed.header,
+                players: borrowed.players.to_vec(),
+                mints: borrowed.mints.to_vec(),
+            })
+        }
+    }
+
+    #[test]
+    fn converting_to_client_types() {
+        let mut data = generate_slice_account(3, 4);
+        // Deserialize works?
+        let foo = SliceAccountOwned::from_account_data(&data).unwrap();
+        assert_eq!(3, foo.header.num_players);
+        assert_eq!(4, foo.header.num_mints);
+        assert_eq!(Pubkey::default(), foo.players[2]);
+        assert_eq!(Pubkey::default(), foo.mints[2]);
+
+        // Mutation works?
+        let foo = SliceAccountMut::from_account_data_mut(&mut data).unwrap();
+        let new_player = Pubkey::new_unique();
+        foo.players[2] = new_player;
+        let new_mint = Pubkey::new_unique();
+        foo.mints[2] = new_mint;
+        let foo = SliceAccountOwned::from_account_data(&data).unwrap();
+        assert_eq!(new_player, foo.players[2]);
+        assert_eq!(new_mint, foo.mints[2]);
     }
 }
