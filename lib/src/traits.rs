@@ -3,9 +3,7 @@ use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
 pub trait AccountDeserialize<'a>: Sized + 'a {
     fn try_from_bytes(data: &'a [u8]) -> Result<&Self, ProgramError>;
-}
 
-pub trait AccountDeserializeMut<'a>: Sized + 'a {
     fn try_from_bytes_mut(data: &'a mut [u8]) -> Result<&mut Self, ProgramError>;
 }
 
@@ -23,12 +21,7 @@ where
             solana_program::program_error::ProgramError::InvalidAccountData,
         ))
     }
-}
 
-impl<'a, T> AccountDeserializeMut<'a> for T
-where
-    T: Discriminator + Pod,
-{
     fn try_from_bytes_mut(data: &'a mut [u8]) -> Result<&mut Self, ProgramError> {
         let data = unsafe {
             std::slice::from_raw_parts_mut(data.as_mut_ptr(), 8 + std::mem::size_of::<T>())
@@ -62,10 +55,10 @@ pub trait FromHeaderMut<'a, H>: Sized {
 
     fn from_bytes_mut(data: &'a mut [u8]) -> Result<Self, ProgramError>
     where
-        H: AccountDeserializeMut<'a>,
+        H: AccountDeserialize<'a>,
     {
         let (header_bytes, remainder) = data.split_at_mut(8 + std::mem::size_of::<H>());
-        let header: &mut H = AccountDeserializeMut::try_from_bytes_mut(header_bytes)?;
+        let header: &mut H = AccountDeserialize::try_from_bytes_mut(header_bytes)?;
         Self::from_header_and_remainder_mut(header, remainder)
     }
 }
@@ -124,14 +117,14 @@ pub trait AsAccount<'a> {
         H: AccountDeserialize<'a>,
         T: FromHeader<'a, H>;
 
-    fn as_account_mut<T: AccountDeserializeMut<'a>>(
+    fn as_account_mut<T: AccountDeserialize<'a>>(
         &'a self,
         program_id: &Pubkey,
     ) -> Result<&mut T, ProgramError>;
 
     fn as_account_mut_with_header<H, T>(&'a self, program_id: &Pubkey) -> Result<T, ProgramError>
     where
-        H: AccountDeserializeMut<'a>,
+        H: AccountDeserialize<'a>,
         T: FromHeaderMut<'a, H>;
 }
 

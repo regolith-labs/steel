@@ -3,8 +3,7 @@ use solana_program::program_pack::Pack;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    AccountDeserialize, AccountDeserializeMut, AccountInfoValidation, AsAccount, Discriminator,
-    FromHeader, FromHeaderMut,
+    AccountDeserialize, AccountInfoValidation, AsAccount, Discriminator, FromHeader, FromHeaderMut,
 };
 #[cfg(feature = "spl")]
 use crate::{AccountValidation, AsSplToken};
@@ -108,7 +107,7 @@ impl<'a> AsAccount<'a> for AccountInfo<'a> {
         }
     }
 
-    fn as_account_mut<T: AccountDeserializeMut<'a>>(
+    fn as_account_mut<T: AccountDeserialize<'a>>(
         &'a self,
         program_id: &Pubkey,
     ) -> Result<&mut T, ProgramError> {
@@ -123,7 +122,7 @@ impl<'a> AsAccount<'a> for AccountInfo<'a> {
 
     fn as_account_mut_with_header<H, T>(&'a self, program_id: &Pubkey) -> Result<T, ProgramError>
     where
-        H: AccountDeserializeMut<'a>,
+        H: AccountDeserialize<'a>,
         T: FromHeaderMut<'a, H>,
     {
         self.has_owner(program_id)?;
@@ -132,7 +131,7 @@ impl<'a> AsAccount<'a> for AccountInfo<'a> {
             let len = borrowed.len();
             let data = std::slice::from_raw_parts_mut(borrowed.as_mut_ptr(), len);
             let (header_bytes, remainder) = data.split_at_mut(8 + std::mem::size_of::<H>());
-            let header: &mut H = AccountDeserializeMut::try_from_bytes_mut(header_bytes)?;
+            let header: &mut H = AccountDeserialize::try_from_bytes_mut(header_bytes)?;
             T::from_header_and_remainder_mut(header, remainder)
         }
     }
