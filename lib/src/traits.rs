@@ -123,9 +123,7 @@ pub trait AsAccount<'a> {
     where
         H: AccountDeserialize<'a>,
         T: FromHeader<'a, H>;
-}
 
-pub trait AsAccountMut<'a> {
     fn as_account_mut<T: AccountDeserializeMut<'a>>(
         &'a self,
         program_id: &Pubkey,

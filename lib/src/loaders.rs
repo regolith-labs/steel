@@ -3,8 +3,8 @@ use solana_program::program_pack::Pack;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    AccountDeserialize, AccountDeserializeMut, AccountInfoValidation, AsAccount, AsAccountMut,
-    Discriminator, FromHeaderMut,
+    AccountDeserialize, AccountDeserializeMut, AccountInfoValidation, AsAccount, Discriminator,
+    FromHeader, FromHeaderMut,
 };
 #[cfg(feature = "spl")]
 use crate::{AccountValidation, AsSplToken};
@@ -95,7 +95,7 @@ impl<'a> AsAccount<'a> for AccountInfo<'a> {
     fn as_account_with_header<H, T>(&'a self, program_id: &Pubkey) -> Result<T, ProgramError>
     where
         H: AccountDeserialize<'a>,
-        T: crate::FromHeader<'a, H>,
+        T: FromHeader<'a, H>,
     {
         self.has_owner(program_id)?;
         unsafe {
@@ -107,9 +107,7 @@ impl<'a> AsAccount<'a> for AccountInfo<'a> {
             T::from_header_and_remainder(header, remainder)
         }
     }
-}
 
-impl<'a> AsAccountMut<'a> for AccountInfo<'a> {
     fn as_account_mut<T: AccountDeserializeMut<'a>>(
         &'a self,
         program_id: &Pubkey,
