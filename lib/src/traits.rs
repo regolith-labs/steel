@@ -1,17 +1,17 @@
 use bytemuck::Pod;
 use solana_program::{program_error::ProgramError, pubkey::Pubkey};
 
-pub trait AccountDeserialize<'a>: Sized + 'a {
-    fn try_from_bytes(data: &'a [u8]) -> Result<&Self, ProgramError>;
+pub trait AccountDeserialize {
+    fn try_from_bytes(data: &[u8]) -> Result<&Self, ProgramError>;
 
-    fn try_from_bytes_mut(data: &'a mut [u8]) -> Result<&mut Self, ProgramError>;
+    fn try_from_bytes_mut(data: &mut [u8]) -> Result<&mut Self, ProgramError>;
 }
 
-impl<'a, T> AccountDeserialize<'a> for T
+impl<T> AccountDeserialize for T
 where
     T: Discriminator + Pod,
 {
-    fn try_from_bytes(data: &'a [u8]) -> Result<&T, ProgramError> {
+    fn try_from_bytes(data: &[u8]) -> Result<&T, ProgramError> {
         let data =
             unsafe { std::slice::from_raw_parts(data.as_ptr(), 8 + std::mem::size_of::<T>()) };
         if T::discriminator().ne(&data[0]) {
@@ -22,7 +22,7 @@ where
         ))
     }
 
-    fn try_from_bytes_mut(data: &'a mut [u8]) -> Result<&mut Self, ProgramError> {
+    fn try_from_bytes_mut(data: &mut [u8]) -> Result<&mut Self, ProgramError> {
         let data = unsafe {
             std::slice::from_raw_parts_mut(data.as_mut_ptr(), 8 + std::mem::size_of::<T>())
         };
@@ -37,9 +37,9 @@ where
 
 pub trait FromHeader<'a, H>: Sized {
     fn from_header_and_remainder(header: &'a H, data: &'a [u8]) -> Result<Self, ProgramError>;
-    fn from_bytes(data: &'a [u8]) -> Result<Self, ProgramError>
+    fn from_header(data: &'a [u8]) -> Result<Self, ProgramError>
     where
-        H: AccountDeserialize<'a>,
+        H: AccountDeserialize + 'a,
     {
         let (header_bytes, remainder) = data.split_at(8 + std::mem::size_of::<H>());
         let header: &H = AccountDeserialize::try_from_bytes(header_bytes)?;
@@ -53,9 +53,9 @@ pub trait FromHeaderMut<'a, H>: Sized {
         data: &'a mut [u8],
     ) -> Result<Self, ProgramError>;
 
-    fn from_bytes_mut(data: &'a mut [u8]) -> Result<Self, ProgramError>
+    fn from_header_mut(data: &'a mut [u8]) -> Result<Self, ProgramError>
     where
-        H: AccountDeserialize<'a>,
+        H: AccountDeserialize + 'a,
     {
         let (header_bytes, remainder) = data.split_at_mut(8 + std::mem::size_of::<H>());
         let header: &mut H = AccountDeserialize::try_from_bytes_mut(header_bytes)?;
@@ -106,25 +106,25 @@ pub trait Discriminator {
 /// 1. Program owner check
 /// 2. Discriminator byte check
 /// 3. Checked bytemuck conversion of account data to &T or &mut T.
-pub trait AsAccount<'a> {
-    fn as_account<T: AccountDeserialize<'a>>(
-        &'a self,
-        program_id: &Pubkey,
-    ) -> Result<&T, ProgramError>;
+pub trait AsAccount {
+    fn as_account<T: AccountDeserialize>(&self, program_id: &Pubkey) -> Result<&T, ProgramError>;
 
-    fn as_account_with_header<H, T>(&'a self, program_id: &Pubkey) -> Result<T, ProgramError>
+    fn as_account_with_header<'a, H, T>(&'a self, program_id: &Pubkey) -> Result<T, ProgramError>
     where
-        H: AccountDeserialize<'a>,
+        H: AccountDeserialize + 'a,
         T: FromHeader<'a, H>;
 
-    fn as_account_mut<T: AccountDeserialize<'a>>(
-        &'a self,
+    fn as_account_mut<T: AccountDeserialize>(
+        &self,
         program_id: &Pubkey,
     ) -> Result<&mut T, ProgramError>;
 
-    fn as_account_mut_with_header<H, T>(&'a self, program_id: &Pubkey) -> Result<T, ProgramError>
+    fn as_account_mut_with_header<'a, H, T>(
+        &'a self,
+        program_id: &Pubkey,
+    ) -> Result<T, ProgramError>
     where
-        H: AccountDeserialize<'a>,
+        H: AccountDeserialize + 'a,
         T: FromHeaderMut<'a, H>;
 }
 
@@ -245,19 +245,19 @@ mod tests {
     fn account_headers() {
         let mut data = generate_slice_account_data(3, 2);
         // Deserialize works?
-        let foo = SliceAccount::from_bytes(&data).unwrap();
+        let foo = SliceAccount::from_header(&data).unwrap();
         assert_eq!(3, foo.header.num_players);
         assert_eq!(2, foo.header.num_mints);
         assert_eq!(Pubkey::default(), foo.players[0]);
         assert_eq!(Pubkey::default(), foo.mints[0]);
 
         // Mutation works?
-        let foo = SliceAccountMut::from_bytes_mut(&mut data).unwrap();
+        let foo = SliceAccountMut::from_header_mut(&mut data).unwrap();
         let new_player = Pubkey::new_unique();
         foo.players[0] = new_player;
         let new_mint = Pubkey::new_unique();
         foo.mints[0] = new_mint;
-        let foo = SliceAccount::from_bytes(&data).unwrap();
+        let foo = SliceAccount::from_header(&data).unwrap();
         assert_eq!(new_player, foo.players[0]);
         assert_eq!(new_mint, foo.mints[0]);
 
@@ -321,8 +321,8 @@ mod tests {
 
     impl<'a> FromHeader<'a, SliceHeader> for SliceAccountOwned {
         fn from_header_and_remainder(
-            header: &'a SliceHeader,
-            data: &'a [u8],
+            header: &SliceHeader,
+            data: &[u8],
         ) -> Result<SliceAccountOwned, ProgramError> {
             let borrowed = SliceAccount::from_header_and_remainder(header, data)?;
             Ok(SliceAccountOwned {
@@ -337,19 +337,19 @@ mod tests {
     fn converting_to_client_types() {
         let mut data = generate_slice_account_data(3, 4);
         // Deserialize works?
-        let foo = SliceAccountOwned::from_bytes(&data).unwrap();
+        let foo = SliceAccountOwned::from_header(&data).unwrap();
         assert_eq!(3, foo.header.num_players);
         assert_eq!(4, foo.header.num_mints);
         assert_eq!(Pubkey::default(), foo.players[2]);
         assert_eq!(Pubkey::default(), foo.mints[2]);
 
         // Mutation works?
-        let foo = SliceAccountMut::from_bytes_mut(&mut data).unwrap();
+        let foo = SliceAccountMut::from_header_mut(&mut data).unwrap();
         let new_player = Pubkey::new_unique();
         foo.players[2] = new_player;
         let new_mint = Pubkey::new_unique();
         foo.mints[2] = new_mint;
-        let foo = SliceAccountOwned::from_bytes(&data).unwrap();
+        let foo = SliceAccountOwned::from_header(&data).unwrap();
         assert_eq!(new_player, foo.players[2]);
         assert_eq!(new_mint, foo.mints[2]);
     }

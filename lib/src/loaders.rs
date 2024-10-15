@@ -77,11 +77,8 @@ impl AccountInfoValidation for AccountInfo<'_> {
     }
 }
 
-impl<'a> AsAccount<'a> for AccountInfo<'a> {
-    fn as_account<T: AccountDeserialize<'a>>(
-        &'a self,
-        program_id: &Pubkey,
-    ) -> Result<&T, ProgramError> {
+impl<'info> AsAccount for AccountInfo<'info> {
+    fn as_account<T: AccountDeserialize>(&self, program_id: &Pubkey) -> Result<&T, ProgramError> {
         self.has_owner(program_id)?;
         unsafe {
             T::try_from_bytes(std::slice::from_raw_parts(
@@ -91,9 +88,10 @@ impl<'a> AsAccount<'a> for AccountInfo<'a> {
         }
     }
 
-    fn as_account_with_header<H, T>(&'a self, program_id: &Pubkey) -> Result<T, ProgramError>
+    fn as_account_with_header<'a, H, T>(&'a self, program_id: &Pubkey) -> Result<T, ProgramError>
     where
-        H: AccountDeserialize<'a>,
+        'info: 'a,
+        H: AccountDeserialize + 'a,
         T: FromHeader<'a, H>,
     {
         self.has_owner(program_id)?;
@@ -107,8 +105,8 @@ impl<'a> AsAccount<'a> for AccountInfo<'a> {
         }
     }
 
-    fn as_account_mut<T: AccountDeserialize<'a>>(
-        &'a self,
+    fn as_account_mut<T: AccountDeserialize>(
+        &self,
         program_id: &Pubkey,
     ) -> Result<&mut T, ProgramError> {
         self.has_owner(program_id)?;
@@ -120,9 +118,9 @@ impl<'a> AsAccount<'a> for AccountInfo<'a> {
         }
     }
 
-    fn as_account_mut_with_header<H, T>(&'a self, program_id: &Pubkey) -> Result<T, ProgramError>
+    fn as_account_mut_with_header<'a, H, T>(&self, program_id: &Pubkey) -> Result<T, ProgramError>
     where
-        H: AccountDeserialize<'a>,
+        H: AccountDeserialize + 'a,
         T: FromHeaderMut<'a, H>,
     {
         self.has_owner(program_id)?;
