@@ -21,4 +21,3 @@ solana-program.workspace = true
 spl-token = { workspace = true, optional = true }
 spl-associated-token-account = { workspace = true, optional = true }
 thiserror.workspace = true
-
