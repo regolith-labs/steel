@@ -12,7 +12,6 @@ pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> Program
     signer_info.is_signer()?;
     counter_info.is_empty()?.is_writable()?.has_seeds(
         &[COUNTER],
-        counter_bump,
         &{name_libcase}_api::ID
     )?;
     system_program.is_program(&system_program::ID)?;
@@ -21,11 +20,11 @@ pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> Program
     create_account::<Counter>(
         counter_info,
         &{name_libcase}_api::ID,
-        &[COUNTER, &[counter_bump]],
+        &[COUNTER],
         system_program,
         signer_info,
     )?;
-    let counter = counter_info.to_account_mut::<Counter>(&{name_libcase}_api::ID)?;
+    let counter = counter_info.as_account_mut::<Counter>(&{name_libcase}_api::ID)?;
     counter.value = 0;
 
     Ok(())
