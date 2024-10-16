@@ -3,7 +3,7 @@ use bytemuck::Pod;
 use solana_program::program_pack::Pack;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{AccountDeserialize, AccountInfoValidation, AsAccount, Discriminator};
+use crate::{AccountDeserialize, AccountInfoValidation, AsAccount, Discriminator, LamportTransfer};
 #[cfg(feature = "spl")]
 use crate::{AccountValidation, AsSplToken};
 
@@ -101,6 +101,14 @@ impl AsAccount for AccountInfo<'_> {
                 8 + std::mem::size_of::<T>(),
             ))
         }
+    }
+}
+
+impl LamportTransfer for AccountInfo<'_> {
+    fn transfer(&self, amount: u64, to: AccountInfo) -> Result<(), ProgramError> {
+        **self.lamports.borrow_mut() -= amount;
+        **to.lamports.borrow_mut() += amount;
+        Ok(())
     }
 }
 
