@@ -115,6 +115,7 @@ impl AsSplToken for AccountInfo<'_> {
             ))
         }
     }
+
     fn as_token_account(&self) -> Result<spl_token::state::Account, ProgramError> {
         unsafe {
             self.has_owner(&spl_token::ID)?;
@@ -124,6 +125,7 @@ impl AsSplToken for AccountInfo<'_> {
             ))
         }
     }
+
     fn as_associated_token_account(
         &self,
         owner: &Pubkey,
@@ -148,6 +150,20 @@ impl AccountValidation for spl_token::state::Mint {
         Ok(self)
     }
 
+    fn assert_with_err<F>(
+        &self,
+        condition: F,
+        err: solana_program::program_error::ProgramError,
+    ) -> Result<&Self, solana_program::program_error::ProgramError>
+    where
+        F: Fn(&Self) -> bool,
+    {
+        if !condition(self) {
+            return Err(err);
+        }
+        Ok(self)
+    }
+
     fn assert_with_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
@@ -163,6 +179,17 @@ impl AccountValidation for spl_token::state::Mint {
     }
 
     fn assert_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool,
+    {
+        panic!("not implemented")
+    }
+
+    fn assert_mut_with_err<F>(
+        &mut self,
+        _condition: F,
+        _err: solana_program::program_error::ProgramError,
+    ) -> Result<&mut Self, solana_program::program_error::ProgramError>
     where
         F: Fn(&Self) -> bool,
     {
@@ -193,6 +220,20 @@ impl AccountValidation for spl_token::state::Account {
         Ok(self)
     }
 
+    fn assert_with_err<F>(
+        &self,
+        condition: F,
+        err: solana_program::program_error::ProgramError,
+    ) -> Result<&Self, solana_program::program_error::ProgramError>
+    where
+        F: Fn(&Self) -> bool,
+    {
+        if !condition(self) {
+            return Err(err);
+        }
+        Ok(self)
+    }
+
     fn assert_with_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
@@ -208,6 +249,17 @@ impl AccountValidation for spl_token::state::Account {
     }
 
     fn assert_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool,
+    {
+        panic!("not implemented")
+    }
+
+    fn assert_mut_with_err<F>(
+        &mut self,
+        _condition: F,
+        _err: solana_program::program_error::ProgramError,
+    ) -> Result<&mut Self, solana_program::program_error::ProgramError>
     where
         F: Fn(&Self) -> bool,
     {

@@ -59,6 +59,21 @@ macro_rules! account {
                 }
                 Ok(self)
             }
+
+            fn assert_with_err<F>(
+                &self,
+                condition: F,
+                err: solana_program::program_error::ProgramError,
+            ) -> Result<&Self, solana_program::program_error::ProgramError>
+            where
+                F: Fn(&Self) -> bool,
+            {
+                if !condition(self) {
+                    return Err(err);
+                }
+                Ok(self)
+            }
+
             fn assert_with_msg<F>(
                 &self,
                 condition: F,
@@ -76,6 +91,7 @@ macro_rules! account {
                 }
                 Ok(self)
             }
+
             fn assert_mut<F>(
                 &mut self,
                 condition: F,
@@ -88,6 +104,21 @@ macro_rules! account {
                 }
                 Ok(self)
             }
+
+            fn assert_mut_with_err<F>(
+                &mut self,
+                condition: F,
+                err: solana_program::program_error::ProgramError,
+            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+            where
+                F: Fn(&Self) -> bool,
+            {
+                if !condition(self) {
+                    return Err(err);
+                }
+                Ok(self)
+            }
+
             fn assert_mut_with_msg<F>(
                 &mut self,
                 condition: F,

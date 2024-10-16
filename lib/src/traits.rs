@@ -73,11 +73,23 @@ pub trait AccountValidation {
     where
         F: Fn(&Self) -> bool;
 
-    fn assert_mut<F>(&mut self, condition: F) -> Result<&mut Self, ProgramError>
+    fn assert_with_err<F>(&self, condition: F, err: ProgramError) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool;
 
     fn assert_with_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool;
+
+    fn assert_mut<F>(&mut self, condition: F) -> Result<&mut Self, ProgramError>
+    where
+        F: Fn(&Self) -> bool;
+
+    fn assert_mut_with_err<F>(
+        &mut self,
+        condition: F,
+        err: ProgramError,
+    ) -> Result<&mut Self, ProgramError>
     where
         F: Fn(&Self) -> bool;
 
