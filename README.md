@@ -11,9 +11,9 @@
 
 - [ ] Helper function for simple lamport transfers between AccountInfos.
 - [ ] Helper function to emit events (wrap sol_log_data).
-- [ ] Custom error messages on account validation checks.
 - [ ] Localnet toolchain.
 - [ ] IDL generation.
+- [x] ~~Custom error messages on account validation checks.~~
 - [x] ~~Helper function to close AccountInfos (wrap realloc and lamport return).~~
 - [x] ~~CLI with init script.~~
 - [x] ~~Account parsers and validation.~~
