@@ -1,5 +1,6 @@
 use std::{fs, io, path::Path};
 
+use colored::*;
 use git2::Repository;
 
 use crate::{
@@ -7,8 +8,41 @@ use crate::{
     NewArgs,
 };
 
+pub fn prompt(prompt: &str) -> String {
+    println!("{}", prompt);
+
+    // Read input
+    let mut input = String::new();
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
+
+    // Trim the newline character from the end of the input
+    let input = input.trim();
+    input.to_owned()
+}
+
 pub fn new_project(args: NewArgs) -> anyhow::Result<()> {
-    let project_name = args.name.to_ascii_lowercase();
+    // Get project name
+    let project_name = if let Some(name) = args.name {
+        name.to_ascii_lowercase()
+    } else {
+        let name = prompt("Please provide a project name:");
+        if name.is_empty() {
+            panic!("{}: Project name cannot be empty.", "ERROR".bold().red());
+        }
+        name.to_ascii_lowercase()
+    };
+
+    // TODO Get names of accounts
+    // TODO Get names of instruction
+    // TODO For each account name,
+    //      - Stub an enum value in api/src/state/mod.rs
+    //      - Stub a file in api/src/state/
+    // TODO For each instruction name,
+    //      - Stub an enum value in api/src/instruction.rs
+    //      - Stub an file in program/src/
+
     let base_path = Path::new(&project_name);
     stub_workspace(base_path, &project_name)?;
     stub_api(base_path, &project_name)?;
