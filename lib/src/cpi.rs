@@ -10,18 +10,18 @@ use crate::Discriminator;
 #[inline(always)]
 pub fn create_account<'a, 'info, T: Discriminator + Pod>(
     target_account: &'a AccountInfo<'info>,
-    owner: &Pubkey,
-    seeds: &[&[u8]],
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
+    owner: &Pubkey,
+    seeds: &[&[u8]],
 ) -> ProgramResult {
     create_account_with_bump::<T>(
         target_account,
+        system_program,
+        payer,
         owner,
         seeds,
         Pubkey::find_program_address(seeds, owner).1,
-        system_program,
-        payer,
     )
 }
 
@@ -29,21 +29,21 @@ pub fn create_account<'a, 'info, T: Discriminator + Pod>(
 #[inline(always)]
 pub fn create_account_with_bump<'a, 'info, T: Discriminator + Pod>(
     target_account: &'a AccountInfo<'info>,
+    system_program: &'a AccountInfo<'info>,
+    payer: &'a AccountInfo<'info>,
     owner: &Pubkey,
     seeds: &[&[u8]],
     bump: u8,
-    system_program: &'a AccountInfo<'info>,
-    payer: &'a AccountInfo<'info>,
 ) -> ProgramResult {
     // Allocate space.
     allocate_account_with_bump(
         target_account,
-        owner,
-        8 + std::mem::size_of::<T>(),
-        seeds,
-        bump,
         system_program,
         payer,
+        8 + std::mem::size_of::<T>(),
+        owner,
+        seeds,
+        bump,
     )?;
 
     // Set discriminator.
@@ -57,20 +57,20 @@ pub fn create_account_with_bump<'a, 'info, T: Discriminator + Pod>(
 #[inline(always)]
 pub fn allocate_account<'a, 'info>(
     target_account: &'a AccountInfo<'info>,
-    owner: &Pubkey,
-    space: usize,
-    seeds: &[&[u8]],
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
+    space: usize,
+    owner: &Pubkey,
+    seeds: &[&[u8]],
 ) -> ProgramResult {
     allocate_account_with_bump(
         target_account,
-        owner,
-        space,
-        seeds,
-        Pubkey::find_program_address(seeds, owner).1,
         system_program,
         payer,
+        space,
+        owner,
+        seeds,
+        Pubkey::find_program_address(seeds, owner).1,
     )
 }
 
@@ -78,12 +78,12 @@ pub fn allocate_account<'a, 'info>(
 #[inline(always)]
 pub fn allocate_account_with_bump<'a, 'info>(
     target_account: &'a AccountInfo<'info>,
-    owner: &Pubkey,
-    space: usize,
-    seeds: &[&[u8]],
-    bump: u8,
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
+    space: usize,
+    owner: &Pubkey,
+    seeds: &[&[u8]],
+    bump: u8,
 ) -> ProgramResult {
     // Combine seeds
     let bump: &[u8] = &[bump];
@@ -172,8 +172,8 @@ pub fn close_account<'info>(
 pub fn invoke_signed<'info>(
     instruction: &Instruction,
     account_infos: &[AccountInfo<'info>],
-    seeds: &[&[u8]],
     program_id: &Pubkey,
+    seeds: &[&[u8]],
 ) -> ProgramResult {
     let bump = Pubkey::find_program_address(seeds, program_id).1;
     invoke_signed_with_bump(instruction, account_infos, seeds, bump)
