@@ -1,5 +1,5 @@
 use bytemuck::Pod;
-use solana_program::{program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 pub trait AccountDeserialize {
     fn try_from_bytes(data: &[u8]) -> Result<&Self, ProgramError>;
@@ -145,9 +145,14 @@ pub trait AsSplToken {
 }
 
 // TODO Work in progress
-// pub trait LamportTransfer<'a, 'info> {
-//     fn transfer(&'a self, lamports: u64, to: &'a AccountInfo<'info>) -> Result<(), ProgramError>;
-// }
+pub trait LamportTransfer<'a, 'info> {
+    fn send(&'a self, lamports: u64, to: &'a AccountInfo<'info>);
+    fn collect(&'a self, lamports: u64, from: &'a AccountInfo<'info>) -> Result<(), ProgramError>;
+}
+
+pub trait CloseAccount<'a, 'info> {
+    fn close(&'a self, to: &'a AccountInfo<'info>) -> Result<(), ProgramError>;
+}
 
 pub trait ProgramOwner {
     fn owner() -> Pubkey;

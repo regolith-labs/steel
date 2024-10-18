@@ -3,7 +3,10 @@ use bytemuck::Pod;
 use solana_program::program_pack::Pack;
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
-use crate::{AccountDeserialize, AccountInfoValidation, AsAccount, Discriminator};
+use crate::{
+    AccountDeserialize, AccountInfoValidation, AsAccount, CloseAccount, Discriminator,
+    LamportTransfer,
+};
 #[cfg(feature = "spl")]
 use crate::{AccountValidation, AsSplToken};
 
@@ -104,15 +107,33 @@ impl AsAccount for AccountInfo<'_> {
     }
 }
 
-// TODO Work in progress
-// impl<'a, 'info> LamportTransfer<'a, 'info> for AccountInfo<'info> {
-//     fn transfer(&'a self, lamports: u64, to: &'a AccountInfo<'info>) -> Result<(), ProgramError> {
-//         invoke(
-//             &solana_program::system_instruction::transfer(self.key, to.key, lamports),
-//             &[self.clone(), to.clone()],
-//         )
-//     }
-// }
+impl<'a, 'info> LamportTransfer<'a, 'info> for AccountInfo<'info> {
+    #[inline(always)]
+    fn send(&'a self, lamports: u64, to: &'a AccountInfo<'info>) {
+        **self.lamports.borrow_mut() -= lamports;
+        **to.lamports.borrow_mut() += lamports;
+    }
+
+    #[inline(always)]
+    fn collect(&'a self, lamports: u64, from: &'a AccountInfo<'info>) -> Result<(), ProgramError> {
+        solana_program::program::invoke(
+            &solana_program::system_instruction::transfer(from.key, self.key, lamports),
+            &[from.clone(), self.clone()],
+        )
+    }
+}
+
+impl<'a, 'info> CloseAccount<'a, 'info> for AccountInfo<'info> {
+    fn close(&'a self, to: &'a AccountInfo<'info>) -> Result<(), ProgramError> {
+        // Realloc data to zero.
+        self.realloc(0, true)?;
+
+        // Return rent lamports.
+        self.send(self.lamports(), to);
+
+        Ok(())
+    }
+}
 
 #[cfg(feature = "spl")]
 impl AsSplToken for AccountInfo<'_> {
