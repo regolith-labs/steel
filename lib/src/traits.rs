@@ -150,6 +150,11 @@ pub trait CloseAccount<'a, 'info> {
     fn close(&'a self, to: &'a AccountInfo<'info>) -> Result<(), ProgramError>;
 }
 
+pub trait Loggable {
+    fn log(&self);
+    fn log_return(&self);
+}
+
 pub trait ProgramOwner {
     fn owner() -> Pubkey;
 }

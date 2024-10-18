@@ -156,6 +156,16 @@ macro_rules! event {
     ($struct_name:ident) => {
         $crate::impl_to_bytes!($struct_name);
         $crate::impl_from_bytes!($struct_name);
+
+        impl $crate::Loggable for $struct_name {
+            fn log(&self) {
+                solana_program::log::sol_log_data(&[self.to_bytes()]);
+            }
+
+            fn log_return(&self) {
+                solana_program::program::set_return_data(self.to_bytes());
+            }
+        }
     };
 }
 
