@@ -602,3 +602,81 @@ pub fn initialize_mint_signed_with_bump<'info>(
         bump,
     )
 }
+
+/// Thaws a frozen SPL token account
+///
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn thaw_account<'info>(
+    token_account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token::instruction::thaw_account(
+            &spl_token::id(),
+            token_account_info.key,
+            mint_info.key,
+            authority_info.key,
+            &[authority_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            token_account_info.clone(),
+            mint_info.clone(),
+            authority_info.clone(),
+        ],
+    )
+}
+
+/// Set authority for an SPL token mint
+///
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn set_authority<'info>(
+    account_or_mint: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    new_authority_info: Option<&AccountInfo<'info>>,
+    authority_type: spl_token::instruction::AuthorityType,
+    token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token::instruction::set_authority(
+            &spl_token::id(),
+            account_or_mint.key,
+            new_authority_info.key,
+            authority_info.key,
+            authority_type,
+            &[authority_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            account_or_mint.clone(),
+            new_authority_info.clone(),
+            authority_info.clone(),
+        ],
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn revoke<'info>(
+    source_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token::instruction::revoke(
+            &spl_token::id(),
+            source_info.key,
+            authority_info.key,
+            &[authority_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            source_info.clone(),
+            authority_info.clone(),
+        ],
+    )
+}
