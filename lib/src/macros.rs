@@ -60,7 +60,7 @@ macro_rules! account {
                 Ok(self)
             }
 
-            fn assert_with_err<F>(
+            fn assert_err<F>(
                 &self,
                 condition: F,
                 err: solana_program::program_error::ProgramError,
@@ -74,7 +74,7 @@ macro_rules! account {
                 Ok(self)
             }
 
-            fn assert_with_msg<F>(
+            fn assert_msg<F>(
                 &self,
                 condition: F,
                 msg: &str,
@@ -82,14 +82,14 @@ macro_rules! account {
             where
                 F: Fn(&Self) -> bool,
             {
-                if let Err(err) = $crate::assert_with_msg(
+                match $crate::assert(
                     condition(self),
                     solana_program::program_error::ProgramError::InvalidAccountData,
                     msg,
                 ) {
-                    return Err(err.into());
+                    Err(err) => Err(err.into()),
+                    Ok(()) => Ok(self),
                 }
-                Ok(self)
             }
 
             fn assert_mut<F>(
@@ -105,7 +105,7 @@ macro_rules! account {
                 Ok(self)
             }
 
-            fn assert_mut_with_err<F>(
+            fn assert_mut_err<F>(
                 &mut self,
                 condition: F,
                 err: solana_program::program_error::ProgramError,
@@ -119,7 +119,7 @@ macro_rules! account {
                 Ok(self)
             }
 
-            fn assert_mut_with_msg<F>(
+            fn assert_mut_msg<F>(
                 &mut self,
                 condition: F,
                 msg: &str,
@@ -127,14 +127,14 @@ macro_rules! account {
             where
                 F: Fn(&Self) -> bool,
             {
-                if let Err(err) = $crate::assert_with_msg(
+                match $crate::assert(
                     condition(self),
                     solana_program::program_error::ProgramError::InvalidAccountData,
                     msg,
                 ) {
-                    return Err(err.into());
+                    Err(err) => Err(err.into()),
+                    Ok(()) => Ok(self),
                 }
-                Ok(self)
             }
         }
     };

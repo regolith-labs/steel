@@ -181,7 +181,7 @@ impl AccountValidation for spl_token::state::Mint {
         Ok(self)
     }
 
-    fn assert_with_err<F>(
+    fn assert_err<F>(
         &self,
         condition: F,
         err: solana_program::program_error::ProgramError,
@@ -195,18 +195,18 @@ impl AccountValidation for spl_token::state::Mint {
         Ok(self)
     }
 
-    fn assert_with_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
+    fn assert_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
     {
-        if let Err(err) = crate::assert_with_msg(
+        match crate::assert(
             condition(self),
             solana_program::program_error::ProgramError::InvalidAccountData,
             msg,
         ) {
-            return Err(err.into());
+            Err(err) => Err(err.into()),
+            Ok(()) => Ok(self),
         }
-        Ok(self)
     }
 
     fn assert_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
@@ -216,7 +216,7 @@ impl AccountValidation for spl_token::state::Mint {
         panic!("not implemented")
     }
 
-    fn assert_mut_with_err<F>(
+    fn assert_mut_err<F>(
         &mut self,
         _condition: F,
         _err: solana_program::program_error::ProgramError,
@@ -227,11 +227,7 @@ impl AccountValidation for spl_token::state::Mint {
         panic!("not implemented")
     }
 
-    fn assert_mut_with_msg<F>(
-        &mut self,
-        _condition: F,
-        _msg: &str,
-    ) -> Result<&mut Self, ProgramError>
+    fn assert_mut_msg<F>(&mut self, _condition: F, _msg: &str) -> Result<&mut Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
     {
@@ -251,7 +247,7 @@ impl AccountValidation for spl_token::state::Account {
         Ok(self)
     }
 
-    fn assert_with_err<F>(
+    fn assert_err<F>(
         &self,
         condition: F,
         err: solana_program::program_error::ProgramError,
@@ -265,18 +261,18 @@ impl AccountValidation for spl_token::state::Account {
         Ok(self)
     }
 
-    fn assert_with_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
+    fn assert_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
     {
-        if let Err(err) = crate::assert_with_msg(
+        match crate::assert(
             condition(self),
             solana_program::program_error::ProgramError::InvalidAccountData,
             msg,
         ) {
-            return Err(err.into());
+            Err(err) => Err(err.into()),
+            Ok(()) => Ok(self),
         }
-        Ok(self)
     }
 
     fn assert_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
@@ -286,7 +282,7 @@ impl AccountValidation for spl_token::state::Account {
         panic!("not implemented")
     }
 
-    fn assert_mut_with_err<F>(
+    fn assert_mut_err<F>(
         &mut self,
         _condition: F,
         _err: solana_program::program_error::ProgramError,
@@ -297,11 +293,7 @@ impl AccountValidation for spl_token::state::Account {
         panic!("not implemented")
     }
 
-    fn assert_mut_with_msg<F>(
-        &mut self,
-        _condition: F,
-        _msg: &str,
-    ) -> Result<&mut Self, ProgramError>
+    fn assert_mut_msg<F>(&mut self, _condition: F, _msg: &str) -> Result<&mut Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
     {
