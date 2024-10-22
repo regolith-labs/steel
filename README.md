@@ -240,7 +240,7 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
 
     signer_info.is_signer()?;
 
-    mint_info.to_mint()?;
+    mint_info.as_mint()?;
 
     sender_info
         .is_writable()?
