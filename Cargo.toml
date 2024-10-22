@@ -3,11 +3,11 @@ resolver = "2"
 members = ["cli", "lib"]
 
 [workspace.package]
-version = "1.4.0"
+version = "2.0.0"
 edition = "2021"
 license = "Apache-2.0"
-homepage = "https://ore.supply"
-documentation = "https://ore.supply"
+homepage = "https://steel.new"
+documentation = "https://docs.rs/steel/latest/steel/"
 repository = "https://github.com/regolith-labs/steel"
 readme = "./README.md"
 keywords = ["solana"]
@@ -32,9 +32,3 @@ spl-associated-token-account = { features = [ "no-entrypoint" ], version = "^2.3
 thiserror = "1.0.57"
 tokio = "1.35"
 quote = "1.0"
-
-# [workspace.dev-dependencies]
-# bs64 = "0.1.2"
-# solana-program-test = "^1.18"
-# solana-sdk = "^1.18"
-# tokio = { version = "1.35", features = ["full"] }
