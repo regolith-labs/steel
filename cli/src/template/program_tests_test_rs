@@ -6,7 +6,7 @@ use steel::*;
 
 async fn setup() -> (BanksClient, Keypair, Hash) {
     let mut program_test = ProgramTest::new(
-        "{name_lowercase}",
+        "{name_libcase}_program",
         {name_libcase}_api::ID,
         processor!({name_libcase}_program::process_instruction),
     );

@@ -2,9 +2,6 @@ use {name_libcase}_api::prelude::*;
 use steel::*;
 
 pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
-    // Get expected pda bump.
-    let counter_bump = counter_pda().1;
-
     // Load accounts.
     let [signer_info, counter_info, system_program] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);        
@@ -19,10 +16,10 @@ pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> Program
     // Initialize counter.
     create_account::<Counter>(
         counter_info,
-        &{name_libcase}_api::ID,
-        &[COUNTER],
         system_program,
         signer_info,
+        &{name_libcase}_api::ID,
+        &[COUNTER],
     )?;
     let counter = counter_info.as_account_mut::<Counter>(&{name_libcase}_api::ID)?;
     counter.value = 0;
