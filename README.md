@@ -11,7 +11,7 @@
 
 - [ ] Localnet toolchain.
 - [ ] IDL generation.
-- [ ] ~~Helper functions for simple lamport transfers between AccountInfos.~~
+- [x] ~~Helper functions for simple lamport transfers.~~
 - [x] ~~Helper functions to emit events (wrap sol_log_data).~~
 - [x] ~~Custom error messages on account validation checks.~~
 - [x] ~~Helper function to close AccountInfos (wrap realloc and lamport return).~~
