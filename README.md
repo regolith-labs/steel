@@ -70,8 +70,6 @@ Cargo.toml (workspace)
 
 ## API
 
-Steel offers a collection of simple macros for defining the interface and building blocks of your program. 
-
 ### Accounts
 
 Uses the `account!` macro to link account structs with the discriminator and implement basic serialization logic.
@@ -166,8 +164,6 @@ event!(MyEvent);
 ```
 
 ## Program
-
-In your contract implementation, Steel offers a series of composable functions to parse accounts, validate state, and execute CPIs. 
 
 ### Entrypoint
 
