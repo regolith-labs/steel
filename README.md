@@ -11,6 +11,7 @@
 
 - [ ] Localnet toolchain.
 - [ ] Mainnet toolchain.
+- [ ] Passthrough cargo args.
 - [ ] IDL generation.
 - [x] ~~Helper functions for simple lamport transfers.~~
 - [x] ~~Helper functions to emit events (wrap sol_log_data).~~
@@ -26,19 +27,19 @@ To get started, install the CLI:
 cargo install steel-cli
 ```
 
-Spin up a new project with the `new` command:
+Use the `new` command to create a new project:
 ```sh
 steel new my-project
 ```
 
 Compile your program using the Solana toolchain:
 ```sh
-cargo build-sbf
+steel build
 ```
 
 Test your program using the Solana toolchain:
 ```sh
-cargo test-sbf
+steel test
 ```
 
 ## File structure
@@ -73,7 +74,7 @@ Cargo.toml (workspace)
 
 ### Accounts
 
-Use the `account!` macro to link account structs with the discriminator and implement basic serialization logic.
+Use the `account!` macro to link account structs with a discriminator and implement basic serialization logic.
 
 ```rs
 use steel::*;
@@ -98,11 +99,12 @@ pub struct Profile {
 }
 
 account!(MyAccount, Counter);
+account!(MyAccount, Profile);
 ```
 
 ### Instructions
 
-Use the `instruction!` macro to link instruction data with the discriminator and implement basic serialization logic.
+Use the `instruction!` macro to link instruction data with a discriminator and implement basic serialization logic.
 
 ```rs
 use steel::*;
@@ -110,13 +112,9 @@ use steel::*;
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, TryFromPrimitive)]
 pub enum MyInstruction {
-    Initialize = 0,
-    Add = 1,
+    Add = 0,
+    Initialize = 1,
 }
-
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Pod, Zeroable)]
-pub struct Initialize {}
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
@@ -124,8 +122,12 @@ pub struct Add {
     pub value: u64,
 }
 
-instruction!(MyInstruction, Initialize);
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Pod, Zeroable)]
+pub struct Initialize {}
+
 instruction!(MyInstruction, Add);
+instruction!(MyInstruction, Initialize);
 
 ```
 
@@ -186,8 +188,8 @@ pub fn process_instruction(
     let (ix, data) = parse_instruction::<MyInstruction>(&example_api::ID, program_id, data)?;
 
     match ix {
-        MyInstruction::Initialize => process_initialize(accounts, data)?,
         MyInstruction::Add => process_add(accounts, data)?,
+        MyInstruction::Initialize => process_initialize(accounts, data)?,
     }
 
     Ok(())
@@ -198,7 +200,7 @@ entrypoint!(process_instruction);
 
 ### Validation
 
-Use chainable parsers and assertion functions to validate account data.
+Use chainable parsers and assertions to validate account data.
 
 ```rs
 use example_api::prelude::*;
@@ -223,7 +225,7 @@ pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult 
 
 ### CPIs
 
-Use streamlined helpers for executing common tasks like creating accounts and transferring tokens.
+Use helper functions to execute common tasks like creating accounts and transferring tokens.
 
 ```rs
 use steel::*;

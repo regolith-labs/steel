@@ -9,15 +9,20 @@
 - [`Instruction`](api/src/instruction.rs) – Declared instructions.
 
 ## Instructions
-- [`Initialize`](program/src/initialize.rs) – Initialize ...
 - [`Add`](program/src/add.rs) – Add ...
+- [`Initialize`](program/src/initialize.rs) – Initialize ...
 
 ## State
 - [`Counter`](api/src/state/counter.rs) – Counter ...
 
-## Tests
+## Get started
 
-To run the test suit, use the Solana toolchain:
+Compile your program:
+```sh
+steel build
 ```
-cargo test-sbf         
+
+Run unit and integration tests:
+```sh
+steel test
 ```
