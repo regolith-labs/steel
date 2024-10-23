@@ -1,6 +1,6 @@
 # 🏗️ Steel 
 
-**Steel is a new Solana smart contract framework.** It provides a library of helper functions, macros, and code patterns for building secure smart contracts on the Solana blockchain.
+**Steel is a new Solana smart contract framework.** It provides a library of helper functions, macros, and code patterns for building safe and simple smart contracts on the Solana blockchain.
 
 ## Notes
 
