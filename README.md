@@ -1,6 +1,6 @@
 # 🏗️ Steel 
 
-**Steel is a new framework for building smart contracts on Solana.** It provides a library of helper functions, macros, and code patterns for implementing secure and maintainable smart contracts.
+**Steel is a new Solana smart contract framework.** It provides a library of helper functions, macros, and code patterns for building secure smart contracts on the Solana blockchain.
 
 ## Notes
 
@@ -10,11 +10,12 @@
 ## Todos
 
 - [ ] Localnet toolchain.
+- [ ] Mainnet toolchain.
 - [ ] IDL generation.
 - [x] ~~Helper functions for simple lamport transfers.~~
 - [x] ~~Helper functions to emit events (wrap sol_log_data).~~
 - [x] ~~Custom error messages on account validation checks.~~
-- [x] ~~Helper function to close AccountInfos (wrap realloc and lamport return).~~
+- [x] ~~Helper function to close AccountInfos.~~
 - [x] ~~CLI with init script.~~
 - [x] ~~Account parsers and validation.~~
 
@@ -40,9 +41,9 @@ Test your program using the Solana toolchain:
 cargo test-sbf
 ```
 
-## Folder structure
+## File structure
 
-While not strictly enforced, we recommend organizing your Solana program with the following file structure. We have found this pattern improves code readability, separating the contract interface from its implementation, and scales well as contract complexity increases. 
+While not strictly enforced, we recommend organizing your Solana program with the following file structure. We have found this pattern to improve code readability, separating the contract interface from its implementation. It scales well for complex contracts. 
 
 ```
 Cargo.toml (workspace)
@@ -72,7 +73,7 @@ Cargo.toml (workspace)
 
 ### Accounts
 
-Uses the `account!` macro to link account structs with the discriminator and implement basic serialization logic.
+Use the `account!` macro to link account structs with the discriminator and implement basic serialization logic.
 
 ```rs
 use steel::*;
