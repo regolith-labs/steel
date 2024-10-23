@@ -228,7 +228,7 @@ Use streamlined helpers for executing common tasks like creating accounts and tr
 ```rs
 use steel::*;
 
-pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramResult {
+pub fn process_transfer(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
     let [signer_info, mint_info, sender_info, receiver_info, token_program] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
