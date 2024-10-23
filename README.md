@@ -1,6 +1,6 @@
 # 🏗️ Steel 
 
-**Steel is a new framework for building smart contracts on Solana.** It provides a library of helper functions, macros, and code patterns for implementing secure and maintainable smart contracts. Steel is generally designed to be unopinionated, minimizing boilerplate code and maximizing developer flexibility.
+**Steel is a new framework for building smart contracts on Solana.** It provides a library of helper functions, macros, and code patterns for implementing secure and maintainable smart contracts.
 
 ## Notes
 
@@ -20,19 +20,24 @@
 
 ## Getting started
 
-To start building with Steel, install the CLI:
+To get started, install the CLI:
 ```sh
 cargo install steel-cli
 ```
 
-Spin up a new project with `new` command:
+Spin up a new project with the `new` command:
 ```sh
 steel new my-project
 ```
 
-To compile your program, use the standard Solana toolchain:
+Compile your program using the Solana toolchain:
 ```sh
 cargo build-sbf
+```
+
+Test your program using the Solana toolchain:
+```sh
+cargo test-sbf
 ```
 
 ## Folder structure
@@ -69,23 +74,28 @@ Steel offers a collection of simple macros for defining the interface and buildi
 
 ### Accounts
 
-For accounts, Steel uses a single enum to manage discriminators and a struct for each account type. The `account!` macro helps link these types and implements basic serialization logic.
+Uses the `account!` macro to link account structs with the discriminator and implement basic serialization logic.
 
 ```rs
 use steel::*;
 
-/// Enum for account discriminators.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, IntoPrimitive, TryFromPrimitive)]
 pub enum MyAccount {
     Counter = 0,
+    Profile = 1,
 }
 
-/// Struct for account state.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
 pub struct Counter {
     pub value: u64,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
+pub struct Profile {
+    pub id: u64,
 }
 
 account!(MyAccount, Counter);
@@ -93,12 +103,11 @@ account!(MyAccount, Counter);
 
 ### Instructions
 
-For instructions, Steel similarly uses a single enum to manage discriminators and a struct for each instruction args type. The `instruction!` macro helps link these types and implement basic serialization logic.
+Use the `instruction!` macro to link instruction data with the discriminator and implement basic serialization logic.
 
 ```rs
 use steel::*;
 
-/// Enum for instruction discriminators.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, TryFromPrimitive)]
 pub enum MyInstruction {
@@ -106,12 +115,10 @@ pub enum MyInstruction {
     Add = 1,
 }
 
-/// Struct for instruction args.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct Initialize {}
 
-/// Struct for instruction args.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct Add {
@@ -125,7 +132,7 @@ instruction!(MyInstruction, Add);
 
 ### Errors
 
-Custom program errors can be created simply by defining an enum for your error messages and passing it to the `error!` macro. 
+Use the `error!` macro to define custom errors.
 
 ```rs
 use steel::*;
@@ -143,7 +150,7 @@ error!(MyError);
 
 ### Events
 
-Similarly, custom program events can be created by defining the event struct and passing it to the `event!` macro. 
+Use the `event!` macro to define custom events.
 
 ```rs
 use steel::*;
@@ -164,7 +171,7 @@ In your contract implementation, Steel offers a series of composable functions t
 
 ### Entrypoint
 
-Steel provides a utility function to streamline the program entrypoint. Securely parse incoming instruction data and dispatch it to a handler.
+Use the `entrypoint!` macro to streamline the program entrypoint.
 
 ```rs
 mod add;
@@ -196,7 +203,7 @@ entrypoint!(process_instruction);
 
 ### Validation
 
-Steel provides a library of composable functions for validating account data. You can chain these functions together to validate arbitrary account state and parse it into whatever type you need. 
+Use chainable parsers and assertion functions to validate account data.
 
 ```rs
 use example_api::prelude::*;
@@ -226,8 +233,7 @@ pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult 
 
 ### CPIs
 
-Steel offers a handful of helper functions for executing common CPIs such as creating accounts, creating token accounts, minting tokens, burning tokens, and more. 
-
+Use streamlined helpers for executing common tasks like creating accounts and transferring tokens.
 
 ```rs
 use steel::*;
