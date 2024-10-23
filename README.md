@@ -20,9 +20,9 @@
 - [x] ~~CLI with init script.~~
 - [x] ~~Account parsers and validation.~~
 
-## Getting started
+## Get started
 
-To get started, install the CLI:
+Install the Steel CLI:
 ```sh
 cargo install steel-cli
 ```
