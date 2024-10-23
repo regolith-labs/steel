@@ -1,17 +1,32 @@
 mod args;
+mod build_project;
+mod clean_project;
 mod config;
 mod new_project;
+mod test_project;
 mod utils;
 
 use args::*;
+use build_project::*;
 use clap::{command, Parser, Subcommand};
+use clean_project::*;
 use config::{load_client_and_signer, CommitmentLevel};
 use new_project::*;
+use test_project::*;
 
 #[derive(Subcommand, Debug)]
 enum Command {
     #[command(about = "Create a new Solana program")]
     New(NewArgs),
+
+    #[command(about = "Compile a program and all of its dependencies")]
+    Build(BuildArgs),
+
+    #[command(about = "Execute all unit and integration tests")]
+    Test(TestArgs),
+
+    #[command(about = "Remove artifacts cargo has generated in the past")]
+    Clean(CleanArgs),
 }
 
 #[derive(Parser, Debug)]
@@ -45,6 +60,9 @@ fn main() -> anyhow::Result<()> {
     } = Args::parse();
     let (_url, _signer) = load_client_and_signer(url, commitment, keypair)?;
     match command {
+        Command::Build(args) => build_project(args),
+        Command::Clean(args) => clean_project(args),
         Command::New(args) => new_project(args),
+        Command::Test(args) => test_project(args),
     }
 }

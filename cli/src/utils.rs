@@ -1,3 +1,17 @@
+pub fn prompt(prompt: &str) -> String {
+    println!("{}", prompt);
+
+    // Read input
+    let mut input = String::new();
+    std::io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
+
+    // Trim the newline character from the end of the input
+    let input = input.trim();
+    input.to_owned()
+}
+
 pub fn to_camel_case(input: &str) -> String {
     let normalized_input = input.replace("-", " ").replace("_", " ");
     let mut words = normalized_input.split_whitespace();

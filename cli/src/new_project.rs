@@ -4,23 +4,9 @@ use colored::*;
 use git2::Repository;
 
 use crate::{
-    utils::{to_camel_case, to_lib_case, to_type_case},
+    utils::{prompt, to_camel_case, to_lib_case, to_type_case},
     NewArgs,
 };
-
-pub fn prompt(prompt: &str) -> String {
-    println!("{}", prompt);
-
-    // Read input
-    let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to read line");
-
-    // Trim the newline character from the end of the input
-    let input = input.trim();
-    input.to_owned()
-}
 
 pub fn new_project(args: NewArgs) -> anyhow::Result<()> {
     // Get project name
@@ -36,12 +22,16 @@ pub fn new_project(args: NewArgs) -> anyhow::Result<()> {
 
     // TODO Get names of accounts
     // TODO Get names of instruction
-    // TODO For each account name,
+    // TODO For each account name:
     //      - Stub an enum value in api/src/state/mod.rs
     //      - Stub a file in api/src/state/
-    // TODO For each instruction name,
+    // TODO For each instruction name:
     //      - Stub an enum value in api/src/instruction.rs
     //      - Stub an file in program/src/
+    // TODO Get metadata:
+    //      - Homepage
+    //      - Repository
+    //      - Generate docs link
 
     let base_path = Path::new(&project_name);
     stub_workspace(base_path, &project_name)?;
