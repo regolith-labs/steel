@@ -229,11 +229,15 @@ Use streamlined helpers for executing common tasks like creating accounts and tr
 use steel::*;
 
 pub fn process_transfer(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
-    let [signer_info, mint_info, sender_info, receiver_info, token_program] = accounts else {
+    let [signer_info, counter_info, mint_info, sender_info, receiver_info, token_program] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
     signer_info.is_signer()?;
+
+    counter_info
+        .as_account::<Counter>(&example_api::ID)?
+        .assert(|c| c.value >= 42)?;
 
     mint_info.as_mint()?;
 
@@ -250,13 +254,12 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramRe
 
     token_program.is_program(&spl_token::ID)?;
 
-    let amount = 42;
     transfer(
         signer_info,
         sender_info,
         receiver_info,
         token_program,
-        amount,
+        counter.value,
     )?;
 
     Ok(())
