@@ -228,6 +228,7 @@ pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult 
 Use helper functions to execute common tasks like creating accounts and transferring tokens.
 
 ```rs
+use example_api::prelude::*;
 use steel::*;
 
 pub fn process_transfer(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
