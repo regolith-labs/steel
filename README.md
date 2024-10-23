@@ -136,7 +136,6 @@ Use the `error!` macro to define custom errors.
 ```rs
 use steel::*;
 
-/// Enum for error types.
 #[repr(u32)]
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq, IntoPrimitive)]
 pub enum MyError {
@@ -154,7 +153,6 @@ Use the `event!` macro to define custom events.
 ```rs
 use steel::*;
 
-/// Struct for logged events.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
 pub struct MyEvent {
@@ -207,23 +205,18 @@ use example_api::prelude::*;
 use steel::*;
 
 pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
-    // Load accounts.
     let [signer_info, counter_info] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
-    // Validate signer.
     signer_info.is_signer()?;
 
-    // Parse and validate account.
     let counter = counter_info
         .as_account_mut::<Counter>(&example_api::ID)? 
         .assert_mut(|c| c.value <= 42)?;
 
-    // Update state.
     counter.value += 1;
 
-    // Return.
     Ok(())
 }
 ```
@@ -236,7 +229,6 @@ Use streamlined helpers for executing common tasks like creating accounts and tr
 use steel::*;
 
 pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramResult {
-    // Load accounts.
     let [signer_info, mint_info, sender_info, receiver_info, token_program] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
@@ -258,7 +250,6 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
 
     token_program.is_program(&spl_token::ID)?;
 
-    // Transfer tokens.
     let amount = 42;
     transfer(
         signer_info,
@@ -268,7 +259,6 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
         amount,
     )?;
 
-    // Return.
     Ok(())
 }
 ```
