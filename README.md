@@ -1,43 +1,49 @@
 # 🏗️ Steel 
 
-**Steel is a new framework for building smart contracts on Solana.** It provides a library of helper functions, macros, and code patterns for implementing secure and maintainable smart contracts. Steel is generally designed to be unopinionated, minimizing boilerplate code and maximizing developer flexibility.
+**Steel is a new Solana smart contract framework.** It provides a library of helper functions, macros, and code patterns for building safe and maintainable smart contracts on the Solana blockchain.
 
 ## Notes
 
 - **Steel is under active development. All interfaces are subject to change.**
-- **This code is unaudited. Use at your own risk**
+- **This code is unaudited. Use at your own risk!**
 
 ## Todos
 
 - [ ] Localnet toolchain.
+- [ ] Mainnet toolchain.
 - [ ] IDL generation.
 - [x] ~~Helper functions for simple lamport transfers.~~
 - [x] ~~Helper functions to emit events (wrap sol_log_data).~~
 - [x] ~~Custom error messages on account validation checks.~~
-- [x] ~~Helper function to close AccountInfos (wrap realloc and lamport return).~~
+- [x] ~~Helper function to close AccountInfos.~~
 - [x] ~~CLI with init script.~~
 - [x] ~~Account parsers and validation.~~
 
 ## Getting started
 
-To start building with Steel, install the CLI:
+To get started, install the CLI:
 ```sh
 cargo install steel-cli
 ```
 
-Spin up a new project with `new` command:
+Spin up a new project with the `new` command:
 ```sh
 steel new my-project
 ```
 
-To compile your program, use the standard Solana toolchain:
+Compile your program using the Solana toolchain:
 ```sh
 cargo build-sbf
 ```
 
-## Folder structure
+Test your program using the Solana toolchain:
+```sh
+cargo test-sbf
+```
 
-While not strictly enforced, we recommend organizing your Solana program with the following file structure. We have found this pattern improves code readability, separating the contract interface from its implementation, and scales well as contract complexity increases. 
+## File structure
+
+While not strictly enforced, we recommend organizing your Solana program with the following file structure. We have found this pattern to improve code readability, separating the contract interface from its implementation. It scales well for complex contracts. 
 
 ```
 Cargo.toml (workspace)
@@ -65,27 +71,30 @@ Cargo.toml (workspace)
 
 ## API
 
-Steel offers a collection of simple macros for defining the interface and building blocks of your program. 
-
 ### Accounts
 
-For accounts, Steel uses a single enum to manage discriminators and a struct for each account type. The `account!` macro helps link these types and implements basic serialization logic.
+Use the `account!` macro to link account structs with the discriminator and implement basic serialization logic.
 
 ```rs
 use steel::*;
 
-/// Enum for account discriminators.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, IntoPrimitive, TryFromPrimitive)]
 pub enum MyAccount {
     Counter = 0,
+    Profile = 1,
 }
 
-/// Struct for account state.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
 pub struct Counter {
     pub value: u64,
+}
+
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
+pub struct Profile {
+    pub id: u64,
 }
 
 account!(MyAccount, Counter);
@@ -93,12 +102,11 @@ account!(MyAccount, Counter);
 
 ### Instructions
 
-For instructions, Steel similarly uses a single enum to manage discriminators and a struct for each instruction args type. The `instruction!` macro helps link these types and implement basic serialization logic.
+Use the `instruction!` macro to link instruction data with the discriminator and implement basic serialization logic.
 
 ```rs
 use steel::*;
 
-/// Enum for instruction discriminators.
 #[repr(u8)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, TryFromPrimitive)]
 pub enum MyInstruction {
@@ -106,12 +114,10 @@ pub enum MyInstruction {
     Add = 1,
 }
 
-/// Struct for instruction args.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct Initialize {}
 
-/// Struct for instruction args.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct Add {
@@ -125,12 +131,11 @@ instruction!(MyInstruction, Add);
 
 ### Errors
 
-Custom program errors can be created simply by defining an enum for your error messages and passing it to the `error!` macro. 
+Use the `error!` macro to define custom errors.
 
 ```rs
 use steel::*;
 
-/// Enum for error types.
 #[repr(u32)]
 #[derive(Debug, Error, Clone, Copy, PartialEq, Eq, IntoPrimitive)]
 pub enum MyError {
@@ -143,12 +148,11 @@ error!(MyError);
 
 ### Events
 
-Similarly, custom program events can be created by defining the event struct and passing it to the `event!` macro. 
+Use the `event!` macro to define custom events.
 
 ```rs
 use steel::*;
 
-/// Struct for logged events.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq, Pod, Zeroable)]
 pub struct MyEvent {
@@ -160,11 +164,9 @@ event!(MyEvent);
 
 ## Program
 
-In your contract implementation, Steel offers a series of composable functions to parse accounts, validate state, and execute CPIs. 
-
 ### Entrypoint
 
-Steel provides a utility function to streamline the program entrypoint. Securely parse incoming instruction data and dispatch it to a handler.
+Use the `entrypoint!` macro to streamline the program entrypoint.
 
 ```rs
 mod add;
@@ -196,49 +198,46 @@ entrypoint!(process_instruction);
 
 ### Validation
 
-Steel provides a library of composable functions for validating account data. You can chain these functions together to validate arbitrary account state and parse it into whatever type you need. 
+Use chainable parsers and assertion functions to validate account data.
 
 ```rs
 use example_api::prelude::*;
 use steel::*;
 
 pub fn process_add(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
-    // Load accounts.
     let [signer_info, counter_info] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
-    // Validate signer.
     signer_info.is_signer()?;
 
-    // Parse and validate account.
     let counter = counter_info
         .as_account_mut::<Counter>(&example_api::ID)? 
         .assert_mut(|c| c.value <= 42)?;
 
-    // Update state.
     counter.value += 1;
 
-    // Return.
     Ok(())
 }
 ```
 
 ### CPIs
 
-Steel offers a handful of helper functions for executing common CPIs such as creating accounts, creating token accounts, minting tokens, burning tokens, and more. 
-
+Use streamlined helpers for executing common tasks like creating accounts and transferring tokens.
 
 ```rs
 use steel::*;
 
-pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramResult {
-    // Load accounts.
-    let [signer_info, mint_info, sender_info, receiver_info, token_program] = accounts else {
+pub fn process_transfer(accounts: &[AccountInfo<'_>], _data: &[u8]) -> ProgramResult {
+    let [signer_info, counter_info, mint_info, sender_info, receiver_info, token_program] = accounts else {
         return Err(ProgramError::NotEnoughAccountKeys);
     };
 
     signer_info.is_signer()?;
+
+    counter_info
+        .as_account::<Counter>(&example_api::ID)?
+        .assert(|c| c.value >= 42)?;
 
     mint_info.as_mint()?;
 
@@ -255,17 +254,14 @@ pub fn process_transfer(accounts: &[AccountInfo<'_>], data: &[u8]) -> ProgramRes
 
     token_program.is_program(&spl_token::ID)?;
 
-    // Transfer tokens.
-    let amount = 42;
     transfer(
         signer_info,
         sender_info,
         receiver_info,
         token_program,
-        amount,
+        counter.value,
     )?;
 
-    // Return.
     Ok(())
 }
 ```
