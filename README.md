@@ -119,7 +119,7 @@ pub enum MyInstruction {
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct Add {
-    pub value: u64,
+    pub value: [u8; 8],
 }
 
 #[repr(C)]
