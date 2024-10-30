@@ -602,3 +602,229 @@ pub fn initialize_mint_signed_with_bump<'info>(
         bump,
     )
 }
+
+/// Thaws a frozen SPL token account
+///
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn thaw_account<'info>(
+    token_account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token::instruction::thaw_account(
+            &spl_token::id(),
+            token_account_info.key,
+            mint_info.key,
+            authority_info.key,
+            &[authority_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            token_account_info.clone(),
+            mint_info.clone(),
+            authority_info.clone(),
+        ],
+    )
+}
+
+/// Thaws a frozen SPL token account using signed account
+///
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn thaw_account_signed<'info>(
+    token_account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+) -> ProgramResult {
+    let bump = Pubkey::find_program_address(seeds, authority_info.owner).1;
+    thaw_account_signed_with_bump(
+        token_account_info,
+        mint_info,
+        authority_info,
+        token_program,
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn thaw_account_signed_with_bump<'info>(
+    token_account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    invoke_signed_with_bump(
+        &spl_token::instruction::burn(
+            &spl_token::id(),
+            token_account_info.key,
+            mint_info.key,
+            authority_info.key,
+            &[authority_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            token_account_info.clone(),
+            mint_info.clone(),
+            authority_info.clone(),
+        ],
+        seeds,
+        bump,
+    )
+}
+
+/// Set authority for an SPL token mint
+///
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn set_authority<'info>(
+    account_or_mint: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    new_authority_info: Option<&AccountInfo<'info>>,
+    authority_type: spl_token::instruction::AuthorityType,
+    token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token::instruction::set_authority(
+            &spl_token::id(),
+            account_or_mint.key,
+            new_authority_info.key,
+            authority_info.key,
+            authority_type,
+            &[authority_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            account_or_mint.clone(),
+            new_authority_info.clone(),
+            authority_info.clone(),
+        ],
+    )
+}
+
+/// Set authority using signer seeds
+///
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn set_authority_signed<'info>(
+    account_or_mint: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    new_authority_info: Option<&AccountInfo<'info>>,
+    authority_type: spl_token::instruction::AuthorityType,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+) -> ProgramResult {
+    let bump = Pubkey::find_program_address(seeds, authority_info.owner).1;
+    set_authority_signed_with_bump(
+        account_or_mint,
+        authority_info,
+        new_authority_info,
+        authority_type,
+        token_program,
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn set_authority_signed_with_bump<'info>(
+    account_or_mint: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    new_authority_info: Option<&AccountInfo<'info>>,
+    authority_type: spl_token::instruction::AuthorityType,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    invoke_signed_with_bump(
+        &spl_token::instruction::initialize_mint(
+            &spl_token::id(),
+            account_or_mint.key,
+            new_authority_info.key,
+            authority_info.key,
+            authority_type,
+            &[authority_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            account_or_mint.clone(),
+            new_authority_info.clone(),
+            authority_info.clone(),
+        ],
+        seeds,
+        bump,
+    )
+}
+
+/// Revoke
+///
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn revoke<'info>(
+    source_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token::instruction::revoke(
+            &spl_token::id(),
+            source_info.key,
+            authority_info.key,
+            &[authority_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            source_info.clone(),
+            authority_info.clone(),
+        ],
+    )
+}
+
+/// Revoke with signer seeds
+///
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn revoke_signed<'info>(
+    source_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+) -> ProgramResult {
+    let bump = Pubkey::find_program_address(seeds, authority_info.owner).1;
+    set_authority_signed_with_bump(source_info, authority_info, token_program, seeds, bump)
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn revoke_signed_with_bump<'info>(
+    source_info: &AccountInfo<'info>,
+    authority_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    invoke_signed_with_bump(
+        &spl_token::instruction::initialize_mint(
+            &spl_token::id(),
+            source_info.key,
+            authority_info.key,
+            &[authority_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            source_info.clone(),
+            authority_info.clone(),
+        ],
+        seeds,
+        bump,
+    )
+}
