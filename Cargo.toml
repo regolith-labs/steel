@@ -18,7 +18,7 @@ clap = { features = ["derive", "env"], version = "4.4" }
 clap_v3 = { version = "3", package = "clap" }
 anyhow = "1"
 colored = "2.0"
-git2 = "0.16"
+git2 = { version = "0.18", features = ["vendored-libgit2"] }
 indicatif = "0.17"
 num_enum = "0.7"
 prettyplease = "0.2"
@@ -28,7 +28,9 @@ solana-cli-config = "^1.18"
 solana-program = "^1.18"
 solana-sdk = "^1.18"
 spl-token = { features = ["no-entrypoint"], version = "^4" }
-spl-associated-token-account = { features = [ "no-entrypoint" ], version = "^2.3" } 
+spl-associated-token-account = { features = [ "no-entrypoint" ], version = "^2.3" }
 thiserror = "1.0.57"
 tokio = "1.35"
 quote = "1.0"
+tempfile = "3.2"
+walkdir = "2.4"
