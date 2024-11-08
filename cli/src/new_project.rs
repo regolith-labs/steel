@@ -1,14 +1,117 @@
 use std::{fs, io, path::Path};
 
 use colored::*;
-use git2::Repository;
+use git2::{FetchOptions, RemoteCallbacks, Repository};
+
+use anyhow::{Context, Result};
+use walkdir::WalkDir;
 
 use crate::{
     utils::{prompt, to_camel_case, to_lib_case, to_type_case},
     NewArgs,
 };
 
-pub fn new_project(args: NewArgs) -> anyhow::Result<()> {
+pub struct TemplateHandler;
+
+impl TemplateHandler {
+    pub fn new() -> Self {
+        Self
+    }
+
+    pub fn clone_and_process(
+        &self,
+        url: &str,
+        target_dir: &Path,
+        project_name: &str,
+    ) -> Result<()> {
+        if target_dir.exists() {
+            return Err(anyhow::anyhow!(
+                "Directory '{}' already exists",
+                target_dir.display()
+            ));
+        }
+
+        fs::create_dir_all(target_dir)
+            .with_context(|| format!("Failed to create directory: {}", target_dir.display()))?;
+
+        let temp_dir = tempfile::TempDir::new().context("Failed to create temporary directory")?;
+
+        let mut callbacks = RemoteCallbacks::new();
+        let mut last_progress = 0;
+        callbacks.transfer_progress(|progress| {
+            let current = progress.received_objects();
+            let total = progress.total_objects();
+            if current != last_progress && current == total {
+                println!("Template downloaded successfully!");
+            }
+            last_progress = current;
+            true
+        });
+
+        let mut fetch_options = FetchOptions::new();
+        fetch_options.remote_callbacks(callbacks);
+
+        let mut builder = git2::build::RepoBuilder::new();
+        builder.fetch_options(fetch_options);
+
+        println!("Downloading template...");
+        builder
+            .clone(url, temp_dir.path())
+            .with_context(|| format!("Failed to clone template repository from {}", url))?;
+
+        self.copy_and_process_directory(temp_dir.path(), target_dir, project_name)?;
+        Repository::init(target_dir)?;
+
+        Ok(())
+    }
+
+    fn copy_and_process_directory(
+        &self,
+        source: &Path,
+        target: &Path,
+        project_name: &str,
+    ) -> Result<()> {
+        for entry in WalkDir::new(source).min_depth(1) {
+            let entry = entry?;
+            let path = entry.path();
+
+            if path.components().any(|c| c.as_os_str() == ".git") {
+                continue;
+            }
+
+            let relative_path = path.strip_prefix(source)?;
+            let target_path = target.join(relative_path);
+
+            if entry.file_type().is_dir() {
+                fs::create_dir_all(&target_path).with_context(|| {
+                    format!("Failed to create directory: {}", target_path.display())
+                })?;
+            } else {
+                if let Some(parent) = target_path.parent() {
+                    fs::create_dir_all(parent).with_context(|| {
+                        format!("Failed to create parent directory: {}", parent.display())
+                    })?;
+                }
+
+                let content = fs::read_to_string(path)
+                    .with_context(|| format!("Failed to read file: {}", path.display()))?;
+
+                let processed_content = content
+                    .replace("{name_lowercase}", &project_name.to_ascii_lowercase())
+                    .replace("{name_uppercase}", &project_name.to_ascii_uppercase())
+                    .replace("{name_camelcase}", &to_camel_case(&project_name))
+                    .replace("{name_typecase}", &to_type_case(&project_name))
+                    .replace("{name_libcase}", &to_lib_case(&project_name));
+
+                fs::write(&target_path, processed_content)
+                    .with_context(|| format!("Failed to write file: {}", target_path.display()))?;
+            }
+        }
+        Ok(())
+    }
+}
+
+pub fn new_project(args: NewArgs) -> Result<()> {
     // Get project name
     let project_name = if let Some(name) = args.name {
         name.to_ascii_lowercase()
@@ -34,9 +137,17 @@ pub fn new_project(args: NewArgs) -> anyhow::Result<()> {
     //      - Generate docs link
 
     let base_path = Path::new(&project_name);
-    stub_workspace(base_path, &project_name)?;
-    stub_api(base_path, &project_name)?;
-    stub_program(base_path, &project_name)?;
+
+    if let Some(template_url) = args.template_url {
+        let handler = TemplateHandler::new();
+        handler.clone_and_process(&template_url, base_path, &project_name)?;
+        println!("✨ Project '{}' created successfully!", project_name);
+    } else {
+        stub_workspace(base_path, &project_name)?;
+        stub_api(base_path, &project_name)?;
+        stub_program(base_path, &project_name)?;
+    }
+
     Ok(())
 }
 
