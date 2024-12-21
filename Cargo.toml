@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["cli", "client", "lib"]
+members = ["cli", "lib", "rpc"]
 
 [workspace.package]
 version = "2.1.1"

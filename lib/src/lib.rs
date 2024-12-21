@@ -4,9 +4,6 @@ pub mod macros;
 mod traits;
 mod utils;
 
-#[cfg(feature = "client")]
-pub mod client;
-
 pub use cpi::*;
 pub use traits::*;
 pub use utils::*;

@@ -4335,10 +4335,8 @@ dependencies = [
 name = "steel"
 version = "2.1.1"
 dependencies = [
- "anyhow",
  "bytemuck",
  "num_enum 0.7.3",
- "solana-client",
  "solana-program",
  "spl-associated-token-account",
  "spl-token",

@@ -13,13 +13,10 @@ keywords.workspace = true
 [features]
 deafult = []
 spl = ["spl-token", "spl-associated-token-account"]
-client = ["anyhow", "solana-client"]
 
 [dependencies]
-anyhow = { workspace = true, optional = true }
 bytemuck.workspace = true
 num_enum.workspace = true
-solana-client = { workspace = true, optional = true }
 solana-program.workspace = true
 spl-token = { workspace = true, optional = true }
 spl-associated-token-account = { workspace = true, optional = true }
