@@ -1,0 +1,19 @@
+[package]
+name = "steel-client"
+description = "Client for Steel programs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+repository.workspace = true
+keywords.workspace = true
+
+[features]
+deafult = []
+
+[dependencies]
+anyhow.workspace = true
+solana-client.workspace = true
+steel.workspace = true
