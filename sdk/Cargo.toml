@@ -1,0 +1,24 @@
+[package]
+name = "steel-sdk"
+description = "SDK for cross-platform Solana applications"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+homepage.workspace = true
+documentation.workspace = true
+readme.workspace = true
+repository.workspace = true
+keywords.workspace = true
+
+[features]
+deafult = []
+wasm = ["solana-client-wasm", "solana-extra-wasm"]
+
+[dependencies]
+solana-client.workspace = true
+solana-client-wasm = { version = "1.18", optional = true }
+solana-extra-wasm = { version = "1.18", optional = true }
+solana-sdk.workspace = true
+solana-transaction-status.workspace = true
+solana-account-decoder.workspace = true
+web-time = { version = "1.0.0", optional = true }
