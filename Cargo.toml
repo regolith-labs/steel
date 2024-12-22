@@ -32,7 +32,7 @@ solana-sdk = "^1.18"
 solana-transaction-status = "^1.18"
 spl-token = { features = ["no-entrypoint"], version = "^4" }
 spl-associated-token-account = { features = [ "no-entrypoint" ], version = "^2.3" } 
-steel = { path = "./lib" }
+steel = { path = "./lib", version = "2.1.1" }
 thiserror = "1.0.57"
 tokio = "1.35"
 quote = "1.0"
