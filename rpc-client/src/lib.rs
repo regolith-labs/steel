@@ -1,12 +1,12 @@
-use solana_client::{nonblocking::rpc_client::RpcClient, rpc_config::RpcProgramAccountsConfig, rpc_filter::{Memcmp, RpcFilterType}};
+use solana_client::{rpc_config::RpcProgramAccountsConfig, rpc_filter::{Memcmp, RpcFilterType}};
 use steel::*;
 
-pub struct Client {
-    rpc: RpcClient,
+pub struct RpcClient {
+    rpc: solana_client::nonblocking::rpc_client::RpcClient,
 }
 
-impl Client {
-    pub fn new(rpc: RpcClient) -> Self {
+impl RpcClient {
+    pub fn new(rpc: solana_client::nonblocking::rpc_client::RpcClient) -> Self {
         Self { rpc }
     }
     

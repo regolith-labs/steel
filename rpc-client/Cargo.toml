@@ -1,5 +1,5 @@
 [package]
-name = "steel-rpc"
+name = "steel-rpc-client"
 description = "Solana RPC client with helpers for Steel programs"
 version = "0.1.0"
 edition.workspace = true

@@ -4566,7 +4566,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "steel-rpc"
+name = "steel-rpc-client"
 version = "0.1.0"
 dependencies = [
  "anyhow",
