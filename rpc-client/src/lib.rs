@@ -6,7 +6,8 @@ pub struct RpcClient {
 }
 
 impl RpcClient {
-    pub fn new(rpc: solana_client::nonblocking::rpc_client::RpcClient) -> Self {
+    pub fn new(rpc_url: String) -> Self {
+        let rpc = solana_client::nonblocking::rpc_client::RpcClient::new(rpc_url);
         Self { rpc }
     }
     
