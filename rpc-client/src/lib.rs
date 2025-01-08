@@ -6,11 +6,16 @@ pub struct RpcClient {
 }
 
 impl RpcClient {
-    pub fn new(rpc_url: String) -> Self {
-        let rpc = solana_client::nonblocking::rpc_client::RpcClient::new(rpc_url);
+    pub fn new(url: String) -> Self {
+        let rpc = solana_client::nonblocking::rpc_client::RpcClient::new(url);
         Self { rpc }
     }
-    
+
+    pub async fn get_account(&self, pubkey: Pubkey) -> Result<solana_sdk::account::Account, anyhow::Error> {
+        let account = self.rpc.get_account(&pubkey).await?;
+        Ok(account)
+    }
+
     pub async fn get_program_account<T>(&self, pubkey: Pubkey) -> Result<T, anyhow::Error> 
     where T: AccountDeserialize + Discriminator + Clone {
         let account = self.rpc.get_account(&pubkey).await?;

@@ -17,3 +17,4 @@ deafult = []
 anyhow.workspace = true
 solana-client.workspace = true
 steel.workspace = true
+solana-sdk.workspace = true
