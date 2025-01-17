@@ -13,7 +13,7 @@ readme = "./README.md"
 keywords = ["solana"]
 
 [workspace.dependencies]
-bytemuck = "1.14"
+bytemuck = "1.19.0"
 clap = { features = ["derive", "env"], version = "4.4" }
 clap_v3 = { version = "3", package = "clap" }
 anyhow = "1"
@@ -23,12 +23,12 @@ indicatif = "0.17"
 num_enum = "0.7"
 prettyplease = "0.2"
 syn = { features = ["full"], version = "2.0" }
-solana-clap-v3-utils = "^1.18"
-solana-cli-config = "^1.18"
-solana-program = "^1.18"
-solana-sdk = "^1.18"
+solana-clap-v3-utils = "^2.1"
+solana-cli-config = "^2.1"
+solana-program = "^2.1"
+solana-sdk = "^2.1"
 spl-token = { features = ["no-entrypoint"], version = "^4" }
-spl-associated-token-account = { features = [ "no-entrypoint" ], version = "^2.3" } 
+spl-associated-token-account = { features = [ "no-entrypoint" ], version = "6.0" }
 thiserror = "1.0.57"
 tokio = "1.35"
 quote = "1.0"
