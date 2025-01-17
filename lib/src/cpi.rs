@@ -7,6 +7,7 @@ use solana_program::{
 use crate::Discriminator;
 
 /// Creates a new account.
+#[inline(always)]
 pub fn create_account<'a, 'info>(
     from_pubkey: &'a AccountInfo<'info>,
     to_pubkey: &'a AccountInfo<'info>,
