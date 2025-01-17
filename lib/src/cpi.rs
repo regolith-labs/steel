@@ -6,16 +6,44 @@ use solana_program::{
 
 use crate::Discriminator;
 
+/// Creates a new account.
+pub fn create_account<'a, 'info>(
+    from_pubkey: &'a AccountInfo<'info>,
+    to_pubkey: &'a AccountInfo<'info>,
+    system_program: &'a AccountInfo<'info>,
+    space: usize,
+    owner: &Pubkey,
+) -> ProgramResult {
+    let lamports_required = (Rent::get()?).minimum_balance(space);
+
+    solana_program::program::invoke(
+        &solana_program::system_instruction::create_account(
+            from_pubkey.key,
+            to_pubkey.key,
+            lamports_required,
+            space as u64,
+            owner,
+        ),
+        &[
+            from_pubkey.clone(),
+            to_pubkey.clone(),
+            system_program.clone(),
+        ],
+    )?;
+
+    Ok(())
+}
+
 /// Creates a new program account.
 #[inline(always)]
-pub fn create_account<'a, 'info, T: Discriminator + Pod>(
+pub fn create_program_account<'a, 'info, T: Discriminator + Pod>(
     target_account: &'a AccountInfo<'info>,
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
     owner: &Pubkey,
     seeds: &[&[u8]],
 ) -> ProgramResult {
-    create_account_with_bump::<T>(
+    create_program_account_with_bump::<T>(
         target_account,
         system_program,
         payer,
@@ -27,7 +55,7 @@ pub fn create_account<'a, 'info, T: Discriminator + Pod>(
 
 /// Creates a new program account with user-provided bump.
 #[inline(always)]
-pub fn create_account_with_bump<'a, 'info, T: Discriminator + Pod>(
+pub fn create_program_account_with_bump<'a, 'info, T: Discriminator + Pod>(
     target_account: &'a AccountInfo<'info>,
     system_program: &'a AccountInfo<'info>,
     payer: &'a AccountInfo<'info>,
