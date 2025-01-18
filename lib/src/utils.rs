@@ -72,8 +72,9 @@ pub fn bytes_to_string<const N: usize>(bytes: &[u8; N]) -> Result<String, Progra
     let actual_len = bytes.iter().position(|&b| b == 0).unwrap_or(N);
 
     // Convert the slice up to actual_len to a string
-    String::from_utf8(bytes[..actual_len].to_vec())
-        .map_err(|_| ProgramError::Custom(ERROR_INVALID_UTF8))
+    Ok(String::from_utf8_lossy(&bytes[..actual_len])
+        .trim_matches('\0')
+        .to_string())
 }
 
 pub const ERROR_STRING_TOO_LONG: u32 = 1;
@@ -86,7 +87,7 @@ fn test_string_to_bytes() {
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), *b"hello");
 
-    // // Test string shorter than buffer
+    // Test string shorter than buffer
     let result = string_to_bytes::<5>("hi");
     assert!(result.is_ok());
     assert_eq!(&result.unwrap()[..2], b"hi");
@@ -114,13 +115,4 @@ fn test_bytes_to_string() {
     let result = bytes_to_string::<5>(&bytes);
     assert!(result.is_ok());
     assert_eq!(result.unwrap(), "hi");
-
-    // Test with invalid UTF-8
-    let invalid_utf8 = [0xFF, 0xFF, 0xFF, 0xFF, 0xFF];
-    let result = bytes_to_string::<5>(&invalid_utf8);
-    assert!(result.is_err());
-    assert_eq!(
-        result.unwrap_err(),
-        ProgramError::Custom(ERROR_INVALID_UTF8)
-    );
 }

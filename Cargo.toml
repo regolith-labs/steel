@@ -13,7 +13,7 @@ readme = "./README.md"
 keywords = ["solana"]
 
 [workspace.dependencies]
-bytemuck = "1.19.0"
+bytemuck = "1.14"
 clap = { features = ["derive", "env"], version = "4.4" }
 clap_v3 = { version = "3", package = "clap" }
 anyhow = "1"
