@@ -3,6 +3,7 @@ mod build_project;
 mod clean_project;
 mod config;
 mod new_project;
+mod program_keys;
 mod test_project;
 mod utils;
 
@@ -12,6 +13,7 @@ use clap::{command, Parser, Subcommand};
 use clean_project::*;
 use config::{load_client_and_signer, CommitmentLevel};
 use new_project::*;
+use program_keys::*;
 use test_project::*;
 
 #[derive(Subcommand, Debug)]
@@ -27,6 +29,9 @@ enum Command {
 
     #[command(about = "Remove artifacts cargo has generated in the past")]
     Clean(CleanArgs),
+
+    #[command(about = "Program Keypair commands.")]
+    Keys(ProgramKeysArgs),
 }
 
 #[derive(Parser, Debug)]
@@ -64,5 +69,10 @@ fn main() -> anyhow::Result<()> {
         Command::Clean(args) => clean_project(args),
         Command::New(args) => new_project(args),
         Command::Test(args) => test_project(args),
+        Command::Keys(args) => match args.command {
+            KeysSubcommand::List => list(args),
+            KeysSubcommand::New => todo!(),
+            KeysSubcommand::Sync => todo!(),
+        },
     }
 }
