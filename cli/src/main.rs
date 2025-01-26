@@ -72,7 +72,7 @@ fn main() -> anyhow::Result<()> {
         Command::Keys(args) => match args.command {
             KeysSubcommand::List => list_keypair(args),
             KeysSubcommand::New => new_keypair(args),
-            KeysSubcommand::Sync => todo!(),
+            KeysSubcommand::Sync => sync_keypair(args),
         },
     }
 }
