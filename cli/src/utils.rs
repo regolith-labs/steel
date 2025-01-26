@@ -1,4 +1,8 @@
-use std::fs::{self};
+use solana_sdk::{signature::Keypair, signer::Signer};
+use std::{
+    fs::{self},
+    io::Write,
+};
 use toml::Value;
 
 pub fn prompt(prompt: &str) -> String {
@@ -136,4 +140,33 @@ pub fn has_directories(dir: &str, dirs: Vec<String>) -> anyhow::Result<bool> {
         == expected_count;
 
     Ok(count)
+}
+
+/// Replaces the declared program id.
+///
+/// # Arguments
+/// - `new_key`: optional `Keypair`. If `None`, new `Keypair` is generated.
+///
+/// # Returns
+/// - `Ok(())` if program ID is successfully replaced.
+/// - `Err` if file cannot be read, written, or if the `declare_id!` macro is not found.
+pub fn replace_prog_id(new_key: Option<Keypair>) -> anyhow::Result<()> {
+    let new_key = new_key.unwrap_or_else(Keypair::new);
+    let lib_rs_path = "./api/src/lib.rs";
+
+    let mut contents = fs::read_to_string(lib_rs_path)?;
+    let offset = contents.find("declare_id!").unwrap_or(contents.len());
+    let offset_start = offset + 11;
+    let formatted_key = format!("(\"{}\");", new_key.pubkey().to_string().as_str());
+    contents.replace_range(offset_start.., &formatted_key);
+
+    // write to file
+    let mut lib_rs = fs::OpenOptions::new()
+        .truncate(true)
+        .write(true)
+        .open(lib_rs_path)?;
+    lib_rs.write_all(contents.as_bytes())?;
+    lib_rs.flush()?;
+
+    Ok(())
 }

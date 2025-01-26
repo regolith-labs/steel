@@ -70,8 +70,8 @@ fn main() -> anyhow::Result<()> {
         Command::New(args) => new_project(args),
         Command::Test(args) => test_project(args),
         Command::Keys(args) => match args.command {
-            KeysSubcommand::List => list(args),
-            KeysSubcommand::New => todo!(),
+            KeysSubcommand::List => list_keypair(args),
+            KeysSubcommand::New => new_keypair(args),
             KeysSubcommand::Sync => todo!(),
         },
     }
