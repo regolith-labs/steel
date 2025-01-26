@@ -28,7 +28,7 @@ pub fn list_keypair(_args: ProgramKeysArgs) -> anyhow::Result<()> {
     let keypair_bytes: Vec<u8> = serde_json::from_str(&keypair_file)?;
     let keypair = Keypair::from_bytes(&keypair_bytes)?;
 
-    println!("{project_name}: {:#?}", keypair.pubkey());
+    println!("{project_name}: {}", keypair.pubkey().to_string());
 
     Ok(())
 }
@@ -59,6 +59,8 @@ pub fn new_keypair(_args: ProgramKeysArgs) -> anyhow::Result<()> {
     lib_rs.write_all(&format!("{:?}", new_key.to_bytes()).as_bytes())?;
     lib_rs.flush()?;
 
+    println!("{project_name}: {}", new_key.pubkey().to_string());
+
     Ok(())
 }
 
@@ -83,7 +85,7 @@ pub fn sync_keypair(_args: ProgramKeysArgs) -> anyhow::Result<()> {
     let lib_rs_contents = fs::read_to_string("./api/src/lib.rs")?;
     let found = lib_rs_contents.find(public_key.to_string().as_str());
     if found.is_some() {
-        println!("program keys already synced: {:?}", public_key.to_string());
+        println!("program keys already synced: {}", public_key.to_string());
         return Ok(());
     }
 
@@ -97,7 +99,7 @@ pub fn sync_keypair(_args: ProgramKeysArgs) -> anyhow::Result<()> {
         .open(deploy_kp_path)?;
     lib_rs.write_all(&format!("{:?}", new_key.to_bytes()).as_bytes())?;
     lib_rs.flush()?;
-    println!("program keys synced to: {:?}", new_key.pubkey().to_string());
+    println!("program keys synced to: {}", new_key.pubkey().to_string());
 
     Ok(())
 }
