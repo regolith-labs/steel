@@ -12,31 +12,19 @@ use crate::{AccountValidation, AsSplToken};
 
 impl AccountInfoValidation for AccountInfo<'_> {
     fn is_signer(&self) -> Result<&Self, ProgramError> {
-        if !self.is_signer {
-            return Err(ProgramError::MissingRequiredSignature);
-        }
-        Ok(self)
+        if !self.is_signer { Err(ProgramError::MissingRequiredSignature) } else { Ok(self) }
     }
 
     fn is_writable(&self) -> Result<&Self, ProgramError> {
-        if !self.is_writable {
-            return Err(ProgramError::MissingRequiredSignature);
-        }
-        Ok(self)
+        if !self.is_writable { Err(ProgramError::MissingRequiredSignature) } else { Ok(self) }
     }
 
     fn is_executable(&self) -> Result<&Self, ProgramError> {
-        if !self.executable {
-            return Err(ProgramError::InvalidAccountData);
-        }
-        Ok(self)
+        if !self.executable { Err(ProgramError::InvalidAccountData) } else { Ok(self) }
     }
 
     fn is_empty(&self) -> Result<&Self, ProgramError> {
-        if !self.data_is_empty() {
-            return Err(ProgramError::AccountAlreadyInitialized);
-        }
-        Ok(self)
+        if !self.data_is_empty() { Err(ProgramError::AccountAlreadyInitialized) } else { Ok(self) }
     }
 
     fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
