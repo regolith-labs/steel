@@ -1,10 +1,15 @@
+use crate::Discriminator;
 use bytemuck::Pod;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, instruction::Instruction, pubkey::Pubkey,
-    rent::Rent, sysvar::Sysvar,
+    account_info::AccountInfo,
+    entrypoint::ProgramResult,
+    instruction::{AccountMeta, Instruction},
+    pubkey::Pubkey,
+    rent::Rent,
+    sysvar::Sysvar,
 };
-
-use crate::Discriminator;
+#[cfg(feature = "spl")]
+use spl_associated_token_account::instruction::AssociatedTokenAccountInstruction;
 
 /// Creates a new account.
 #[inline(always)]
@@ -229,7 +234,7 @@ pub fn invoke_signed_with_bump<'info>(
 
 #[cfg(feature = "spl")]
 #[inline(always)]
-pub fn create_associated_token_account<'info>(
+pub fn create_associated_token_account_with_bump_seed<'info>(
     funder_info: &AccountInfo<'info>,
     owner_info: &AccountInfo<'info>,
     token_account_info: &AccountInfo<'info>,
@@ -237,14 +242,33 @@ pub fn create_associated_token_account<'info>(
     system_program: &AccountInfo<'info>,
     token_program: &AccountInfo<'info>,
     associated_token_program: &AccountInfo<'info>,
+    bump_seed: &[&[u8]],
+    opt_insn: Option<AssociatedTokenAccountInstruction>, //defaults to CREATE.
 ) -> ProgramResult {
+    let instruction = if let Some(insn) = opt_insn {
+        // safety check, assert if not a creation instruction, which is only 0 or 1
+        assert!(insn.clone() as u8 <= AssociatedTokenAccountInstruction::CreateIdempotent as u8);
+        insn
+    } else {
+        spl_associated_token_account::instruction::AssociatedTokenAccountInstruction::Create
+    };
+
+    let associated_account_address =
+        Pubkey::find_program_address(bump_seed, &spl_associated_token_account::id()).0;
+
     solana_program::program::invoke(
-        &spl_associated_token_account::instruction::create_associated_token_account(
-            funder_info.key,
-            owner_info.key,
-            mint_info.key,
-            &spl_token::ID,
-        ),
+        &Instruction {
+            program_id: spl_associated_token_account::id(),
+            accounts: vec![
+                AccountMeta::new(*funder_info.key, true),
+                AccountMeta::new(associated_account_address, false),
+                AccountMeta::new_readonly(*owner_info.key, false),
+                AccountMeta::new_readonly(*mint_info.key, false),
+                AccountMeta::new_readonly(solana_program::system_program::id(), false),
+                AccountMeta::new_readonly(*token_program.key, false),
+            ],
+            data: vec![instruction as u8],
+        },
         &[
             funder_info.clone(),
             token_account_info.clone(),
@@ -254,6 +278,62 @@ pub fn create_associated_token_account<'info>(
             token_program.clone(),
             associated_token_program.clone(),
         ],
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn create_associated_token_account<'info>(
+    funder_info: &AccountInfo<'info>,
+    owner_info: &AccountInfo<'info>,
+    token_account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    system_program: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    associated_token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    create_associated_token_account_with_bump_seed(
+        funder_info,
+        owner_info,
+        token_account_info,
+        mint_info,
+        system_program,
+        token_account_info,
+        associated_token_program,
+        &[
+            &funder_info.key.to_bytes(),
+            &token_program.key.to_bytes(),
+            &mint_info.key.to_bytes(),
+        ],
+        Option::None,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn create_idempotent_associated_token_account<'info>(
+    funder_info: &AccountInfo<'info>,
+    owner_info: &AccountInfo<'info>,
+    token_account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    system_program: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    associated_token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    create_associated_token_account_with_bump_seed(
+        funder_info,
+        owner_info,
+        token_account_info,
+        mint_info,
+        system_program,
+        token_account_info,
+        associated_token_program,
+        &[
+            &funder_info.key.to_bytes(),
+            &token_program.key.to_bytes(),
+            &mint_info.key.to_bytes(),
+        ],
+        AssociatedTokenAccountInstruction::CreateIdempotent.into(),
     )
 }
 
