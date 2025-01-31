@@ -259,6 +259,80 @@ pub fn create_associated_token_account<'info>(
 
 #[cfg(feature = "spl")]
 #[inline(always)]
+pub fn close_token_account<'info>(
+    account_info: &AccountInfo<'info>,
+    destination_info: &AccountInfo<'info>,
+    owner_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token::instruction::close_account(
+            &spl_token::ID,
+            &account_info.key,
+            &destination_info.key,
+            &owner_info.key,
+            &[&owner_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            account_info.clone(),
+            destination_info.clone(),
+            owner_info.clone(),
+        ],
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn close_token_account_signed<'info>(
+    account_info: &AccountInfo<'info>,
+    destination_info: &AccountInfo<'info>,
+    owner_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+) -> ProgramResult {
+    let bump = Pubkey::find_program_address(seeds, owner_info.owner).1;
+    close_token_account_signed_with_bump(
+        account_info,
+        destination_info,
+        owner_info,
+        token_program,
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
+pub fn close_token_account_signed_with_bump<'info>(
+    account_info: &AccountInfo<'info>,
+    destination_info: &AccountInfo<'info>,
+    owner_info: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    seeds: &[&[u8]],
+    bump: u8,
+) -> ProgramResult {
+    invoke_signed_with_bump(
+        &spl_token::instruction::close_account(
+            &spl_token::ID,
+            &account_info.key,
+            &destination_info.key,
+            &owner_info.key,
+            &[&owner_info.key],
+        )?,
+        &[
+            token_program.clone(),
+            account_info.clone(),
+            destination_info.clone(),
+            owner_info.clone(),
+        ],
+        seeds,
+        bump,
+    )
+}
+
+#[cfg(feature = "spl")]
+#[inline(always)]
 pub fn transfer<'info>(
     authority_info: &AccountInfo<'info>,
     from_info: &AccountInfo<'info>,
@@ -342,6 +416,7 @@ pub fn transfer_signed_with_bump<'info>(
 pub fn transfer_checked<'info>(
     authority_info: &AccountInfo<'info>,
     from_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
     to_info: &AccountInfo<'info>,
     token_program: &AccountInfo<'info>,
     amount: u64,
@@ -351,6 +426,7 @@ pub fn transfer_checked<'info>(
         &spl_token::instruction::transfer_checked(
             &spl_token::ID,
             from_info.key,
+            mint_info.key,
             to_info.key,
             authority_info.key,
             &[authority_info.key],
@@ -360,6 +436,7 @@ pub fn transfer_checked<'info>(
         &[
             token_program.clone(),
             from_info.clone(),
+            mint_info.clone(),
             to_info.clone(),
             authority_info.clone(),
         ],
@@ -371,6 +448,7 @@ pub fn transfer_checked<'info>(
 pub fn transfer_checked_signed<'info>(
     authority_info: &AccountInfo<'info>,
     from_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
     to_info: &AccountInfo<'info>,
     token_program: &AccountInfo<'info>,
     amount: u64,
@@ -381,6 +459,7 @@ pub fn transfer_checked_signed<'info>(
     transfer_checked_signed_with_bump(
         authority_info,
         from_info,
+        mint_info,
         to_info,
         token_program,
         amount,
@@ -395,6 +474,7 @@ pub fn transfer_checked_signed<'info>(
 pub fn transfer_checked_signed_with_bump<'info>(
     authority_info: &AccountInfo<'info>,
     from_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
     to_info: &AccountInfo<'info>,
     token_program: &AccountInfo<'info>,
     amount: u64,
@@ -406,6 +486,7 @@ pub fn transfer_checked_signed_with_bump<'info>(
         &spl_token::instruction::transfer_checked(
             &spl_token::ID,
             from_info.key,
+            mint_info.key,
             to_info.key,
             authority_info.key,
             &[authority_info.key],
@@ -415,6 +496,7 @@ pub fn transfer_checked_signed_with_bump<'info>(
         &[
             token_program.clone(),
             from_info.clone(),
+            mint_info.clone(),
             to_info.clone(),
             authority_info.clone(),
         ],
