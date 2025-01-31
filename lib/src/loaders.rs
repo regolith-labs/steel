@@ -33,32 +33,20 @@ impl AccountInfoValidation for AccountInfo<'_> {
 
     fn is_type<T: Discriminator>(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
         self.has_owner(program_id)?;
-        if self.try_borrow_data()?[0].ne(&T::discriminator()) {
-            return Err(ProgramError::InvalidAccountData);
-        }
-        Ok(self)
+        if self.try_borrow_data()?[0].ne(&T::discriminator()) { Err(ProgramError::InvalidAccountData) } else { Ok(self) }
     }
 
     fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError> {
-        if self.owner.ne(owner) {
-            return Err(ProgramError::InvalidAccountOwner);
-        }
-        Ok(self)
+        if self.owner.ne(owner) { Err(ProgramError::InvalidAccountOwner) } else { Ok(self) }
     }
 
     fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError> {
-        if self.key.ne(&address) {
-            return Err(ProgramError::InvalidAccountData);
-        }
-        Ok(self)
+        if self.key.ne(&address) { Err(ProgramError::InvalidAccountData) } else { Ok(self) }
     }
 
     fn has_seeds(&self, seeds: &[&[u8]], program_id: &Pubkey) -> Result<&Self, ProgramError> {
         let pda = Pubkey::find_program_address(seeds, program_id);
-        if self.key.ne(&pda.0) {
-            return Err(ProgramError::InvalidSeeds);
-        }
-        Ok(self)
+        if self.key.ne(&pda.0) { Err(ProgramError::InvalidSeeds) } else { Ok(self) }
     }
 
     fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError> {
