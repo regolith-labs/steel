@@ -28,8 +28,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     }
 
     fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError> {
-        self.has_owner(&solana_program::sysvar::ID)?
-            .has_address(sysvar_id)
+        self.has_owner(&solana_program::sysvar::ID)?.has_address(sysvar_id)
     }
 
     fn is_type<T: Discriminator>(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
