@@ -11,24 +11,25 @@ use crate::{
 use crate::{AccountValidation, AsSplToken};
 
 impl AccountInfoValidation for AccountInfo<'_> {
-    fn is_signer(&self) -> Result<&Self, ProgramError> {
-        if !self.is_signer { Err(ProgramError::MissingRequiredSignature) } else { Ok(self) }
-    }
-
-    fn is_writable(&self) -> Result<&Self, ProgramError> {
-        if !self.is_writable { Err(ProgramError::MissingRequiredSignature) } else { Ok(self) }
+    fn is_empty(&self) -> Result<&Self, ProgramError> {
+        if !self.data_is_empty() { Err(ProgramError::AccountAlreadyInitialized) } else { Ok(self) }
     }
 
     fn is_executable(&self) -> Result<&Self, ProgramError> {
         if !self.executable { Err(ProgramError::InvalidAccountData) } else { Ok(self) }
     }
 
-    fn is_empty(&self) -> Result<&Self, ProgramError> {
-        if !self.data_is_empty() { Err(ProgramError::AccountAlreadyInitialized) } else { Ok(self) }
-    }
-
     fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
         self.has_address(program_id)?.is_executable()
+    }
+
+    fn is_signer(&self) -> Result<&Self, ProgramError> {
+        if !self.is_signer { Err(ProgramError::MissingRequiredSignature) } else { Ok(self) }
+    }
+
+    fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError> {
+        self.has_owner(&solana_program::sysvar::ID)?
+            .has_address(sysvar_id)
     }
 
     fn is_type<T: Discriminator>(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
@@ -36,22 +37,21 @@ impl AccountInfoValidation for AccountInfo<'_> {
         if self.try_borrow_data()?[0].ne(&T::discriminator()) { Err(ProgramError::InvalidAccountData) } else { Ok(self) }
     }
 
-    fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError> {
-        if self.owner.ne(owner) { Err(ProgramError::InvalidAccountOwner) } else { Ok(self) }
+    fn is_writable(&self) -> Result<&Self, ProgramError> {
+        if !self.is_writable { Err(ProgramError::MissingRequiredSignature) } else { Ok(self) }
     }
 
     fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError> {
         if self.key.ne(&address) { Err(ProgramError::InvalidAccountData) } else { Ok(self) }
     }
+    
+    fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError> {
+        if self.owner.ne(owner) { Err(ProgramError::InvalidAccountOwner) } else { Ok(self) }
+    }
 
     fn has_seeds(&self, seeds: &[&[u8]], program_id: &Pubkey) -> Result<&Self, ProgramError> {
         let pda = Pubkey::find_program_address(seeds, program_id);
         if self.key.ne(&pda.0) { Err(ProgramError::InvalidSeeds) } else { Ok(self) }
-    }
-
-    fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError> {
-        self.has_owner(&solana_program::sysvar::ID)?
-            .has_address(sysvar_id)
     }
 }
 
