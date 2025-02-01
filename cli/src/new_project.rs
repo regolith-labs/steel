@@ -20,6 +20,8 @@ pub fn new_project(args: NewArgs) -> anyhow::Result<()> {
         name.to_ascii_lowercase()
     };
 
+    let no_git = args.no_git;
+
     // TODO Get names of accounts
     // TODO Get names of instruction
     // TODO For each account name:
@@ -34,13 +36,13 @@ pub fn new_project(args: NewArgs) -> anyhow::Result<()> {
     //      - Generate docs link
 
     let base_path = Path::new(&project_name);
-    stub_workspace(base_path, &project_name)?;
+    stub_workspace(base_path, &project_name, no_git)?;
     stub_api(base_path, &project_name)?;
     stub_program(base_path, &project_name)?;
     Ok(())
 }
 
-fn stub_workspace(base_path: &Path, project_name: &String) -> io::Result<()> {
+fn stub_workspace(base_path: &Path, project_name: &String, no_git: bool) -> io::Result<()> {
     // Create folder
     fs::create_dir_all(&base_path)?;
 
@@ -51,11 +53,15 @@ fn stub_workspace(base_path: &Path, project_name: &String) -> io::Result<()> {
 
     // Stub files
     stub_file(CARGO_TOML, &base_path.join("Cargo.toml"), project_name)?;
-    stub_file(GITIGNORE, &base_path.join(".gitignore"), project_name)?;
     stub_file(README_MD, &base_path.join("README.md"), project_name)?;
 
-    // Initialize git
-    Repository::init(base_path).unwrap();
+    if !no_git {
+        // Initialize git
+        Repository::init(base_path).unwrap();
+
+        // Stub .gitignore file
+        stub_file(GITIGNORE, &base_path.join(".gitignore"), project_name)?;
+    }
 
     Ok(())
 }
