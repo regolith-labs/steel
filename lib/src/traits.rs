@@ -140,7 +140,6 @@ pub trait AsSplToken {
     ) -> Result<spl_token::state::Account, ProgramError>;
 }
 
-// TODO Work in progress
 pub trait LamportTransfer<'a, 'info> {
     fn send(&'a self, lamports: u64, to: &'a AccountInfo<'info>);
     fn collect(&'a self, lamports: u64, from: &'a AccountInfo<'info>) -> Result<(), ProgramError>;
