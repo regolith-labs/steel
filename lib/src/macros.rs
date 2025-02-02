@@ -47,6 +47,7 @@ macro_rules! account {
         }
 
         impl $crate::AccountValidation for $struct_name {
+            #[track_caller]
             fn assert<F>(
                 &self,
                 condition: F,
@@ -62,6 +63,7 @@ macro_rules! account {
                 Ok(self)
             }
 
+            #[track_caller]
             fn assert_err<F>(
                 &self,
                 condition: F,
@@ -95,6 +97,7 @@ macro_rules! account {
                 Ok(self)
             }
 
+            #[track_caller]
             fn assert_mut<F>(
                 &mut self,
                 condition: F,
@@ -110,6 +113,7 @@ macro_rules! account {
                 Ok(self)
             }
 
+            #[track_caller]
             fn assert_mut_err<F>(
                 &mut self,
                 condition: F,
