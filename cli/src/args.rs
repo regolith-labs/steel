@@ -4,6 +4,9 @@ use clap::{arg, Parser};
 pub struct NewArgs {
     #[arg(value_name = "NAME", help = "The name of the program")]
     pub name: Option<String>,
+
+    #[arg(long, help = "Create new project without git.")]
+    pub no_git: bool,
 }
 
 #[derive(Parser, Debug)]
