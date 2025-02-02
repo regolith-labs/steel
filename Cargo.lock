@@ -3595,8 +3595,7 @@ dependencies = [
 [[package]]
 name = "solana-client-wasm"
 version = "1.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0b838eacf1f99871489268291d9db9c3ba14a77dd01b165113459ada0509cf4e"
+source = "git+https://github.com/regolith-labs/solana-playground?branch=master#73142edce6f35f05bb5dcc579b441327ba0a9073"
 dependencies = [
  "async-trait",
  "base64 0.13.1",
@@ -3652,8 +3651,7 @@ dependencies = [
 [[package]]
 name = "solana-extra-wasm"
 version = "1.18.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "19d9256b963767c7d7e85b0f3dd5439cd774406a5603ee21aff01c2e041fe954"
+source = "git+https://github.com/regolith-labs/solana-playground?branch=master#73142edce6f35f05bb5dcc579b441327ba0a9073"
 dependencies = [
  "Inflector",
  "arrayref",
@@ -4566,26 +4564,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "steel-rpc-client"
-version = "0.1.0"
+name = "steel-sdk"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "solana-client",
+ "solana-client-wasm",
  "solana-sdk",
  "steel",
-]
-
-[[package]]
-name = "steel-sdk"
-version = "0.1.0"
-dependencies = [
- "solana-account-decoder",
- "solana-client",
- "solana-client-wasm",
- "solana-extra-wasm",
- "solana-sdk",
- "solana-transaction-status",
- "web-time",
 ]
 
 [[package]]
@@ -5223,16 +5209,6 @@ name = "web-sys"
 version = "0.3.70"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "26fdeaafd9bd129f65e7c031593c24d62186301e0c72c8978fa1678be7d532c0"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "web-time"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
 dependencies = [
  "js-sys",
  "wasm-bindgen",

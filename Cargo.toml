@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["cli", "lib", "rpc-client", "sdk"]
+members = ["cli", "lib", "sdk"]
 
 [workspace.package]
 version = "2.1.1"
@@ -27,6 +27,7 @@ solana-clap-v3-utils = "^1.18"
 solana-account-decoder = "^1.18"
 solana-cli-config = "^1.18"
 solana-client = "^1.18"
+solana-client-wasm = "^1.18"
 solana-program = "^1.18"
 solana-sdk = "^1.18"
 solana-transaction-status = "^1.18"
@@ -36,3 +37,7 @@ steel = { path = "./lib", version = "2.1.1" }
 thiserror = "1.0.57"
 tokio = "1.35"
 quote = "1.0"
+
+[patch.crates-io]
+solana-client-wasm = { version = "1.18", git = "https://github.com/regolith-labs/solana-playground", branch = "master" }
+solana-extra-wasm = { version = "1.18", git = "https://github.com/regolith-labs/solana-playground", branch = "master" }
