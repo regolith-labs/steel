@@ -1,10 +1,12 @@
 mod cpi;
 mod loaders;
 pub mod macros;
+mod log;
 mod traits;
 mod utils;
 
 pub use cpi::*;
+pub use log::*;
 pub use traits::*;
 pub use utils::*;
 
