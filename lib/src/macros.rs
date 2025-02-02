@@ -55,6 +55,8 @@ macro_rules! account {
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
+                    let caller = std::panic::Location::caller();
+                    solana_program::log::sol_log(format!("Account is invalid: {}", caller).as_str());
                     return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
                 Ok(self)
@@ -69,11 +71,14 @@ macro_rules! account {
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
+                    let caller = std::panic::Location::caller();
+                    solana_program::log::sol_log(format!("Account is invalid: {}", caller).as_str());
                     return Err(err);
                 }
                 Ok(self)
             }
 
+            #[track_caller]
             fn assert_msg<F>(
                 &self,
                 condition: F,
@@ -100,6 +105,8 @@ macro_rules! account {
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
+                    let caller = std::panic::Location::caller();
+                    solana_program::log::sol_log(format!("Account is invalid: {}", caller).as_str());
                     return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
                 Ok(self)
@@ -114,11 +121,14 @@ macro_rules! account {
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
+                    let caller = std::panic::Location::caller();
+                    solana_program::log::sol_log(format!("Account is invalid: {}", caller).as_str());
                     return Err(err);
                 }
                 Ok(self)
             }
 
+            #[track_caller]
             fn assert_mut_msg<F>(
                 &mut self,
                 condition: F,

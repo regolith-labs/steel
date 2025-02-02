@@ -29,6 +29,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
         Ok(self)
     }
 
+    #[track_caller]
     fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
         self.has_address(program_id)?.is_executable()
     }
@@ -42,6 +43,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
         Ok(self)
     }
 
+    #[track_caller]
     fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError> {
         self.has_owner(&solana_program::sysvar::ID)?.has_address(sysvar_id)
     }
@@ -95,6 +97,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
 }
 
 impl AsAccount for AccountInfo<'_> {
+    #[track_caller]
     fn as_account<T>(&self, program_id: &Pubkey) -> Result<&T, ProgramError>
     where
         T: AccountDeserialize + Discriminator + Pod,
@@ -108,6 +111,7 @@ impl AsAccount for AccountInfo<'_> {
         }
     }
 
+    #[track_caller]
     fn as_account_mut<T>(&self, program_id: &Pubkey) -> Result<&mut T, ProgramError>
     where
         T: AccountDeserialize + Discriminator + Pod,
@@ -152,6 +156,7 @@ impl<'a, 'info> CloseAccount<'a, 'info> for AccountInfo<'info> {
 
 #[cfg(feature = "spl")]
 impl AsSplToken for AccountInfo<'_> {
+    #[track_caller]
     fn as_mint(&self) -> Result<spl_token::state::Mint, ProgramError> {
         unsafe {
             self.has_owner(&spl_token::ID)?;
@@ -162,6 +167,7 @@ impl AsSplToken for AccountInfo<'_> {
         }
     }
 
+    #[track_caller]
     fn as_token_account(&self) -> Result<spl_token::state::Account, ProgramError> {
         unsafe {
             self.has_owner(&spl_token::ID)?;
@@ -172,6 +178,7 @@ impl AsSplToken for AccountInfo<'_> {
         }
     }
 
+    #[track_caller]
     fn as_associated_token_account(
         &self,
         owner: &Pubkey,
@@ -191,6 +198,8 @@ impl AccountValidation for spl_token::state::Mint {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
+            let caller = std::panic::Location::caller();
+            sol_log(format!("Mint is invalid: {}", caller).as_str());
             return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
         Ok(self)
@@ -205,11 +214,14 @@ impl AccountValidation for spl_token::state::Mint {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
+            let caller = std::panic::Location::caller();
+            sol_log(format!("Mint is invalid: {}", caller).as_str());
             return Err(err);
         }
         Ok(self)
     }
 
+    #[track_caller]
     fn assert_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
@@ -257,6 +269,8 @@ impl AccountValidation for spl_token::state::Account {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
+            let caller = std::panic::Location::caller();
+            sol_log(format!("Account is invalid: {}", caller).as_str());
             return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
         Ok(self)
@@ -271,11 +285,14 @@ impl AccountValidation for spl_token::state::Account {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
+            let caller = std::panic::Location::caller();
+            sol_log(format!("Account is invalid: {}", caller).as_str());
             return Err(err);
         }
         Ok(self)
     }
 
+    #[track_caller]
     fn assert_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
