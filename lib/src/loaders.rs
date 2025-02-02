@@ -60,10 +60,20 @@ impl AsAccount for AccountInfo<'_> {
         T: AccountDeserialize + Discriminator + Pod,
     {
         unsafe {
+            // Validate account owner.  
             self.has_owner(program_id)?;
+
+            // Validate account data length.
+            let data = self.try_borrow_data()?;
+            let expected_len = 8 + std::mem::size_of::<T>();
+            if data.len() != expected_len {
+                return Err(ProgramError::InvalidAccountData);
+            }
+
+            // Deserialize account data.
             T::try_from_bytes(std::slice::from_raw_parts(
-                self.try_borrow_data()?.as_ptr(),
-                8 + std::mem::size_of::<T>(),
+                data.as_ptr(),
+                expected_len,
             ))
         }
     }
@@ -73,11 +83,23 @@ impl AsAccount for AccountInfo<'_> {
         T: AccountDeserialize + Discriminator + Pod,
     {
         unsafe {
+            // Validate account owner.
             self.has_owner(program_id)?;
-            T::try_from_bytes_mut(std::slice::from_raw_parts_mut(
-                self.try_borrow_mut_data()?.as_mut_ptr(),
-                8 + std::mem::size_of::<T>(),
-            ))
+
+            // Validate account data length.
+            let mut data = self.try_borrow_mut_data()?;
+            let expected_len = 8 + std::mem::size_of::<T>();
+            if data.len() != expected_len {
+                return Err(ProgramError::InvalidAccountData);
+            }
+
+            // Deserialize account data.
+            T::try_from_bytes_mut(
+                std::slice::from_raw_parts_mut(
+                    data.as_mut_ptr(),
+                    expected_len,
+                )
+            )
         }
     }
 }
@@ -114,21 +136,43 @@ impl<'a, 'info> CloseAccount<'a, 'info> for AccountInfo<'info> {
 impl AsSplToken for AccountInfo<'_> {
     fn as_mint(&self) -> Result<spl_token::state::Mint, ProgramError> {
         unsafe {
+            // Validate account owner.
             self.has_owner(&spl_token::ID)?;
-            spl_token::state::Mint::unpack(std::slice::from_raw_parts(
-                self.try_borrow_data()?.as_ptr(),
-                spl_token::state::Mint::LEN,
-            ))
+
+            // Validate account data length.
+            let data = self.try_borrow_data()?;
+            if data.len() != spl_token::state::Mint::LEN {
+                return Err(ProgramError::InvalidAccountData);
+            }
+
+            // Deserialize account data.
+            spl_token::state::Mint::unpack(
+                std::slice::from_raw_parts(
+                    data.as_ptr(),
+                    spl_token::state::Mint::LEN,
+                )
+            )
         }
     }
 
     fn as_token_account(&self) -> Result<spl_token::state::Account, ProgramError> {
         unsafe {
+            // Validate account owner.
             self.has_owner(&spl_token::ID)?;
-            spl_token::state::Account::unpack(std::slice::from_raw_parts(
-                self.try_borrow_data()?.as_ptr(),
-                spl_token::state::Account::LEN,
-            ))
+
+            // Validate account data length.
+            let data = self.try_borrow_data()?;
+            if data.len() != spl_token::state::Account::LEN {
+                return Err(ProgramError::InvalidAccountData);
+            }
+
+            // Deserialize account data.
+            spl_token::state::Account::unpack(
+                std::slice::from_raw_parts(
+                    data.as_ptr(),
+                    spl_token::state::Account::LEN,
+                )
+            )
         }
     }
 
