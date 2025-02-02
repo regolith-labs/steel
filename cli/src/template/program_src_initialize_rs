@@ -14,7 +14,7 @@ pub fn process_initialize(accounts: &[AccountInfo<'_>], _data: &[u8]) -> Program
     system_program.is_program(&system_program::ID)?;
 
     // Initialize counter.
-    create_account::<Counter>(
+    create_program_account::<Counter>(
         counter_info,
         system_program,
         signer_info,
