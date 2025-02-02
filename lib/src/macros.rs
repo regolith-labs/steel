@@ -56,7 +56,7 @@ macro_rules! account {
             {
                 if !condition(self) {
                     let caller = std::panic::Location::caller();
-                    solana_program::log::sol_log(format!("Account is invalid: {}", caller).as_str());
+                    solana_program::log::sol_log(format!("Account data is invalid: {}", caller).as_str());
                     return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
                 Ok(self)
@@ -72,7 +72,7 @@ macro_rules! account {
             {
                 if !condition(self) {
                     let caller = std::panic::Location::caller();
-                    solana_program::log::sol_log(format!("Account is invalid: {}", caller).as_str());
+                    solana_program::log::sol_log(format!("Account data is invalid: {}", caller).as_str());
                     return Err(err);
                 }
                 Ok(self)
@@ -87,14 +87,12 @@ macro_rules! account {
             where
                 F: Fn(&Self) -> bool,
             {
-                match $crate::assert(
-                    condition(self),
-                    solana_program::program_error::ProgramError::InvalidAccountData,
-                    msg,
-                ) {
-                    Err(err) => Err(err.into()),
-                    Ok(()) => Ok(self),
+                if !condition(self) {
+                    let caller = std::panic::Location::caller();
+                    solana_program::log::sol_log(format!("Account data is invalid: {}", caller).as_str());
+                    return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
+                Ok(self)
             }
 
             fn assert_mut<F>(
@@ -106,7 +104,7 @@ macro_rules! account {
             {
                 if !condition(self) {
                     let caller = std::panic::Location::caller();
-                    solana_program::log::sol_log(format!("Account is invalid: {}", caller).as_str());
+                    solana_program::log::sol_log(format!("Account data is invalid: {}", caller).as_str());
                     return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
                 Ok(self)
@@ -122,7 +120,7 @@ macro_rules! account {
             {
                 if !condition(self) {
                     let caller = std::panic::Location::caller();
-                    solana_program::log::sol_log(format!("Account is invalid: {}", caller).as_str());
+                    solana_program::log::sol_log(format!("Account data is invalid: {}", caller).as_str());
                     return Err(err);
                 }
                 Ok(self)
@@ -137,14 +135,12 @@ macro_rules! account {
             where
                 F: Fn(&Self) -> bool,
             {
-                match $crate::assert(
-                    condition(self),
-                    solana_program::program_error::ProgramError::InvalidAccountData,
-                    msg,
-                ) {
-                    Err(err) => Err(err.into()),
-                    Ok(()) => Ok(self),
+                if !condition(self) {
+                    let caller = std::panic::Location::caller();
+                    solana_program::log::sol_log(format!("Account data is invalid: {}", caller).as_str());
+                    return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
+                Ok(self)
             }
         }
     };

@@ -243,7 +243,7 @@ impl AccountValidation for spl_token::state::Mint {
     {
         if !condition(self) {
             let caller = std::panic::Location::caller();
-            sol_log(format!("Mint is invalid: {}", caller).as_str());
+            sol_log(format!("Mint data is invalid: {}", caller).as_str());
             return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
         Ok(self)
@@ -259,7 +259,7 @@ impl AccountValidation for spl_token::state::Mint {
     {
         if !condition(self) {
             let caller = std::panic::Location::caller();
-            sol_log(format!("Mint is invalid: {}", caller).as_str());
+            sol_log(format!("Mint data is invalid: {}", caller).as_str());
             return Err(err);
         }
         Ok(self)
@@ -270,14 +270,12 @@ impl AccountValidation for spl_token::state::Mint {
     where
         F: Fn(&Self) -> bool,
     {
-        match crate::assert(
-            condition(self),
-            solana_program::program_error::ProgramError::InvalidAccountData,
-            msg,
-        ) {
-            Err(err) => Err(err.into()),
-            Ok(()) => Ok(self),
+        if !condition(self) {
+            let caller = std::panic::Location::caller();
+            sol_log(format!("Mint data is invalid: {}: {}", caller, msg).as_str());
+            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
+        Ok(self)
     }
 
     fn assert_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
@@ -314,7 +312,7 @@ impl AccountValidation for spl_token::state::Account {
     {
         if !condition(self) {
             let caller = std::panic::Location::caller();
-            sol_log(format!("Account is invalid: {}", caller).as_str());
+            sol_log(format!("Token account data is invalid: {}", caller).as_str());
             return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
         Ok(self)
@@ -330,25 +328,22 @@ impl AccountValidation for spl_token::state::Account {
     {
         if !condition(self) {
             let caller = std::panic::Location::caller();
-            sol_log(format!("Account is invalid: {}", caller).as_str());
+            sol_log(format!("Token account data is invalid: {}", caller).as_str());
             return Err(err);
         }
         Ok(self)
     }
 
-    #[track_caller]
     fn assert_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
     where
         F: Fn(&Self) -> bool,
     {
-        match crate::assert(
-            condition(self),
-            solana_program::program_error::ProgramError::InvalidAccountData,
-            msg,
-        ) {
-            Err(err) => Err(err.into()),
-            Ok(()) => Ok(self),
+        if !condition(self) {
+            let caller = std::panic::Location::caller();
+            sol_log(format!("Token account data is invalid: {}: {}", caller, msg).as_str());
+            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
+        Ok(self)
     }
 
     fn assert_mut<F>(&mut self, _condition: F) -> Result<&mut Self, ProgramError>
