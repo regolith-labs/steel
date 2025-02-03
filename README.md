@@ -9,7 +9,7 @@
 
 ## Todos
 
-- [ ] IDL generation (tip: ask cursor to generate one)
+- [ ] IDL generation (tip: ask [Cursor](https://www.cursor.com/) to generate one)
 - [ ] Localnet toolchain.
 - [ ] Mainnet toolchain.
 - [x] ~~Helper functions for simple lamport transfers.~~
