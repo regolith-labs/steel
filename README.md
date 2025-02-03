@@ -9,9 +9,9 @@
 
 ## Todos
 
+- [ ] IDL generation (tip: ask cursor to generate one)
 - [ ] Localnet toolchain.
 - [ ] Mainnet toolchain.
-- [ ] IDL generation (tip: ask Cursor to generate one)
 - [x] ~~Helper functions for simple lamport transfers.~~
 - [x] ~~Helper functions to emit events (wrap sol_log_data).~~
 - [x] ~~Custom error messages on account validation checks.~~
