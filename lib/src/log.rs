@@ -1,17 +1,15 @@
-use solana_program::{log::sol_log, program_error::ProgramError};
+use solana_program::program_error::ProgramError;
 
+/// Logs a message.
+#[inline(always)]
 pub fn log(msg: String) {
-    sol_log(msg.as_str());
+    solana_program::log::sol_log(msg.as_str());
 }
 
-/// Returns an error and logs the caller location.
+/// Logs the call trace and returns the error.
 #[track_caller]
-pub fn trace(title: &str, msg: Option<&str>, error: ProgramError) -> ProgramError {
+pub fn trace(msg: &str, error: ProgramError) -> ProgramError {
     let caller = std::panic::Location::caller();
-    if let Some(msg) = msg {
-        sol_log(format!("{}: {}: {}", title, msg, caller).as_str());
-    } else {
-        sol_log(format!("{}: {}", title, caller).as_str());
-    }
+    log(format!("{}: {}", msg, caller));
     error
 }
