@@ -1,12 +1,13 @@
 use bytemuck::Pod;
-#[cfg(feature = "spl")]
-use solana_program::program_pack::Pack;
-use solana_program::{account_info::AccountInfo, log::sol_log, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 use crate::{
-    AccountDeserialize, AccountInfoValidation, AsAccount, CloseAccount, Discriminator,
-    LamportTransfer,
+    trace, AccountDeserialize, AccountInfoValidation, AsAccount, CloseAccount, Discriminator, LamportTransfer
 };
+
+#[cfg(feature = "spl")]
+use solana_program::program_pack::Pack;
+
 #[cfg(feature = "spl")]
 use crate::{AccountValidation, AsSplToken};
 
@@ -14,9 +15,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     #[track_caller]
     fn is_empty(&self) -> Result<&Self, ProgramError> {
         if !self.data_is_empty() { 
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Account already initialized: {}", caller).as_str());
-            return Err(ProgramError::AccountAlreadyInitialized);
+            return Err(trace("Account already initialized", ProgramError::AccountAlreadyInitialized));
         }
         Ok(self)
     }
@@ -24,9 +23,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     #[track_caller]
     fn is_executable(&self) -> Result<&Self, ProgramError> {
         if !self.executable { 
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Account is not executable: {}", caller).as_str());
-            return Err(ProgramError::InvalidAccountData);
+            return Err(trace("Account is not executable", ProgramError::InvalidAccountData));
         }
         Ok(self)
     }
@@ -39,9 +36,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     #[track_caller]
     fn is_signer(&self) -> Result<&Self, ProgramError> {
         if !self.is_signer { 
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Account is not a signer: {}", caller).as_str());
-            return Err(ProgramError::MissingRequiredSignature);
+            return Err(trace("Account is not a signer", ProgramError::MissingRequiredSignature));
         }
         Ok(self)
     }
@@ -55,9 +50,10 @@ impl AccountInfoValidation for AccountInfo<'_> {
     fn is_type<T: Discriminator>(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
         self.has_owner(program_id)?;
         if self.try_borrow_data()?[0].ne(&T::discriminator()) { 
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Account is not of type {}: {}", T::discriminator(), caller).as_str());
-            return Err(ProgramError::InvalidAccountData);
+            return Err(trace(
+                format!("Account is not of type {}", T::discriminator()).as_str(),
+                ProgramError::InvalidAccountData,
+            ));
         }
         Ok(self)
     }
@@ -65,9 +61,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     #[track_caller]
     fn is_writable(&self) -> Result<&Self, ProgramError> {
         if !self.is_writable { 
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Account is not writable: {}", caller).as_str());
-            return Err(ProgramError::MissingRequiredSignature);
+            return Err(trace("Account is not writable",  ProgramError::MissingRequiredSignature));
         }
         Ok(self)
     }
@@ -75,9 +69,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     #[track_caller]
     fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError> {
         if self.key.ne(&address) { 
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Account has invalid address: {}", caller).as_str());
-            return Err(ProgramError::InvalidAccountData);
+            return Err(trace("Account has invalid address",  ProgramError::InvalidAccountData));
         }
         Ok(self)
     }
@@ -85,9 +77,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     #[track_caller]
     fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError> {
         if self.owner.ne(owner) { 
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Account has invalid owner: {}", caller).as_str());
-            return Err(ProgramError::InvalidAccountOwner);
+            return Err(trace("Account has invalid owner",  ProgramError::InvalidAccountOwner));
         }
         Ok(self)
     }
@@ -96,9 +86,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     fn has_seeds(&self, seeds: &[&[u8]], program_id: &Pubkey) -> Result<&Self, ProgramError> {
         let pda = Pubkey::find_program_address(seeds, program_id);
         if self.key.ne(&pda.0) { 
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Account has invalid seeds: {}", caller).as_str());
-            return Err(ProgramError::InvalidSeeds);
+            return Err(trace("Account has invalid seeds",  ProgramError::InvalidSeeds));
         }
         Ok(self)
     }
@@ -251,9 +239,10 @@ impl AccountValidation for spl_token::state::Mint {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Mint data is invalid: {}", caller).as_str());
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+            return Err(trace(
+                "Mint data is invalid",
+                solana_program::program_error::ProgramError::InvalidAccountData,
+            ));
         }
         Ok(self)
     }
@@ -268,9 +257,7 @@ impl AccountValidation for spl_token::state::Mint {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Mint data is invalid: {}", caller).as_str());
-            return Err(err);
+            return Err(trace("Mint data is invalid", err));
         }
         Ok(self)
     }
@@ -281,9 +268,10 @@ impl AccountValidation for spl_token::state::Mint {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Mint data is invalid: {}: {}", msg, caller).as_str());
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+            return Err(trace(
+                format!("Mint data is invalid: {}", msg).as_str(),
+                solana_program::program_error::ProgramError::InvalidAccountData,
+            ));
         }
         Ok(self)
     }
@@ -322,9 +310,10 @@ impl AccountValidation for spl_token::state::Account {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Token account data is invalid: {}", caller).as_str());
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+            return Err(trace(
+                "Token account data is invalid",
+                solana_program::program_error::ProgramError::InvalidAccountData,
+            ));
         }
         Ok(self)
     }
@@ -339,9 +328,7 @@ impl AccountValidation for spl_token::state::Account {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Token account data is invalid: {}", caller).as_str());
-            return Err(err);
+            return Err(trace("Token account data is invalid", err));
         }
         Ok(self)
     }
@@ -352,9 +339,10 @@ impl AccountValidation for spl_token::state::Account {
         F: Fn(&Self) -> bool,
     {
         if !condition(self) {
-            let caller = std::panic::Location::caller();
-            sol_log(format!("Token account data is invalid: {}: {}", msg, caller).as_str());
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+            return Err(trace(
+                format!("Token account data is invalid: {}", msg).as_str(),
+                solana_program::program_error::ProgramError::InvalidAccountData,
+            ));
         }
         Ok(self)
     }
