@@ -282,7 +282,7 @@ impl AccountValidation for spl_token::state::Mint {
     {
         if !condition(self) {
             let caller = std::panic::Location::caller();
-            sol_log(format!("Mint data is invalid: {}: {}", caller, msg).as_str());
+            sol_log(format!("Mint data is invalid: {}: {}", msg, caller).as_str());
             return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
         Ok(self)
@@ -353,7 +353,7 @@ impl AccountValidation for spl_token::state::Account {
     {
         if !condition(self) {
             let caller = std::panic::Location::caller();
-            sol_log(format!("Token account data is invalid: {}: {}", caller, msg).as_str());
+            sol_log(format!("Token account data is invalid: {}: {}", msg, caller).as_str());
             return Err(solana_program::program_error::ProgramError::InvalidAccountData);
         }
         Ok(self)

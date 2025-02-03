@@ -91,7 +91,7 @@ macro_rules! account {
             {
                 if !condition(self) {
                     let caller = std::panic::Location::caller();
-                    solana_program::log::sol_log(format!("Account data is invalid: {}", caller).as_str());
+                    solana_program::log::sol_log(format!("Account data is invalid: {}: {}", msg, caller).as_str());
                     return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
                 Ok(self)
@@ -141,7 +141,7 @@ macro_rules! account {
             {
                 if !condition(self) {
                     let caller = std::panic::Location::caller();
-                    solana_program::log::sol_log(format!("Account data is invalid: {}", caller).as_str());
+                    solana_program::log::sol_log(format!("Account data is invalid: {}: {}", msg, caller).as_str());
                     return Err(solana_program::program_error::ProgramError::InvalidAccountData);
                 }
                 Ok(self)
