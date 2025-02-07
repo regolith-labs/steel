@@ -1,4 +1,5 @@
-use solana_program::{program_error::ProgramError, pubkey::Pubkey};
+use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use spl_token_2022::{extension::{BaseStateWithExtensions, ExtensionType, StateWithExtensions}, state::{Account, Mint}};
 
 /// Parses an instruction from the instruction data.
 pub fn parse_instruction<'a, T: std::convert::TryFrom<u8>>(
@@ -65,6 +66,16 @@ pub fn bytes_to_string<const N: usize>(bytes: &[u8; N]) -> Result<String, Progra
 
 pub const ERROR_STRING_TOO_LONG: u32 = 1;
 pub const ERROR_INVALID_UTF8: u32 = 2;
+
+pub fn get_token_2022_mint_space(mint_account: &AccountInfo) -> Result<usize, ProgramError> {
+    let mint_data = mint_account.try_borrow_data()?;
+    let mint_state = StateWithExtensions::<Mint>::unpack(&mint_data)?;
+    let mint_extensions = mint_state.get_extension_types()?;
+    let required_extensions =
+        ExtensionType::get_required_init_account_extensions(&mint_extensions);
+    
+    ExtensionType::try_calculate_account_len::<Account>(&required_extensions)
+}
 
 #[test]
 fn test_string_to_bytes() {
