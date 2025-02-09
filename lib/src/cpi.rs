@@ -198,9 +198,9 @@ pub fn close_account<'info>(
 
 /// Invokes a CPI with provided signer seeds and program id.
 #[inline(always)]
-pub fn invoke_signed<'info>(
+pub fn invoke_signed(
     instruction: &Instruction,
-    account_infos: &[AccountInfo<'info>],
+    account_infos: &[AccountInfo<'_>],
     program_id: &Pubkey,
     seeds: &[&[u8]],
 ) -> ProgramResult {
@@ -210,9 +210,9 @@ pub fn invoke_signed<'info>(
 
 /// Invokes a CPI with the provided signer seeds and bump.
 #[inline(always)]
-pub fn invoke_signed_with_bump<'info>(
+pub fn invoke_signed_with_bump(
     instruction: &Instruction,
-    account_infos: &[AccountInfo<'info>],
+    account_infos: &[AccountInfo<'_>],
     seeds: &[&[u8]],
     bump: u8,
 ) -> ProgramResult {
@@ -268,10 +268,10 @@ pub fn close_token_account<'info>(
     solana_program::program::invoke(
         &spl_token::instruction::close_account(
             &spl_token::ID,
-            &account_info.key,
-            &destination_info.key,
-            &owner_info.key,
-            &[&owner_info.key],
+            account_info.key,
+            destination_info.key,
+            owner_info.key,
+            [&owner_info.key],
         )?,
         &[
             token_program.clone(),
@@ -315,10 +315,10 @@ pub fn close_token_account_signed_with_bump<'info>(
     invoke_signed_with_bump(
         &spl_token::instruction::close_account(
             &spl_token::ID,
-            &account_info.key,
-            &destination_info.key,
-            &owner_info.key,
-            &[&owner_info.key],
+            account_info.key,
+            destination_info.key,
+            owner_info.key,
+            [&owner_info.key],
         )?,
         &[
             token_program.clone(),
