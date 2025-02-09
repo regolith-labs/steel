@@ -56,7 +56,10 @@ macro_rules! account {
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
-                    return Err(trace("Account data is invalid", solana_program::program_error::ProgramError::InvalidAccountData));
+                    return Err(trace(
+                        "Account data is invalid",
+                        solana_program::program_error::ProgramError::InvalidAccountData,
+                    ));
                 }
                 Ok(self)
             }
@@ -103,7 +106,10 @@ macro_rules! account {
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
-                    return Err(trace("Account data is invalid", solana_program::program_error::ProgramError::InvalidAccountData));
+                    return Err(trace(
+                        "Account data is invalid",
+                        solana_program::program_error::ProgramError::InvalidAccountData,
+                    ));
                 }
                 Ok(self)
             }
