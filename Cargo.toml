@@ -28,9 +28,11 @@ solana-cli-config = "^2.1"
 solana-program = "^2.1"
 solana-sdk = "^2.1"
 spl-token = { features = ["no-entrypoint"], version = "^4" }
-spl-associated-token-account = { features = [ "no-entrypoint" ], version = "6.0" }
+spl-associated-token-account = { features = ["no-entrypoint"], version = "6.0" }
 thiserror = "1.0.57"
 tokio = "1.35"
 quote = "1.0"
 toml = "0.8.19"
 serde_json = "1.0.137"
+pinocchio = { git = "https://github.com/febo/pinocchio" }
+pinocchio-log = "0.3.0"
