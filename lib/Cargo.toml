@@ -13,7 +13,12 @@ keywords.workspace = true
 [features]
 default = []
 spl = ["spl-token", "spl-associated-token-account"]
-pinocchio = ["dep:pinocchio", "dep:pinocchio-log"]
+pinocchio = [
+    "dep:pinocchio",
+    "dep:pinocchio-log",
+    "dep:pinocchio-pubkey",
+    "dep:pinocchio-system",
+]
 
 [dependencies]
 bytemuck.workspace = true
@@ -24,3 +29,5 @@ spl-associated-token-account = { workspace = true, optional = true }
 thiserror.workspace = true
 pinocchio = { workspace = true, optional = true }
 pinocchio-log = { workspace = true, optional = true }
+pinocchio-pubkey = { workspace = true, optional = true }
+pinocchio-system = { workspace = true, optional = true }

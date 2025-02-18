@@ -1804,6 +1804,12 @@ checksum = "3b3cff922bd51709b605d9ead9aa71031d81447142d828eb4a6eba76fe619f9b"
 [[package]]
 name = "pinocchio"
 version = "0.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "43a8a77bf74e1c4050a2bad53648acfcfbf22b1806473f9c9334a58ef3b38ec4"
+
+[[package]]
+name = "pinocchio"
+version = "0.7.1"
 source = "git+https://github.com/febo/pinocchio#e432ca6716deeb4b76e929b496d185de0fa738fa"
 
 [[package]]
@@ -1824,6 +1830,26 @@ dependencies = [
  "quote",
  "regex",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "pinocchio-pubkey"
+version = "0.2.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "103d69776a0c585bb01b344d641346593adb4496120796df229722a9bab2db68"
+dependencies = [
+ "five8_const",
+ "pinocchio 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "pinocchio-system"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "691ec8989fcb86fba22f22deb3cae9d440dc174d1735dd785b172349e9cbbb8a"
+dependencies = [
+ "pinocchio 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "pinocchio-pubkey",
 ]
 
 [[package]]
@@ -3406,8 +3432,10 @@ version = "3.0.3"
 dependencies = [
  "bytemuck",
  "num_enum",
- "pinocchio",
+ "pinocchio 0.7.1 (git+https://github.com/febo/pinocchio)",
  "pinocchio-log",
+ "pinocchio-pubkey",
+ "pinocchio-system",
  "solana-program",
  "spl-associated-token-account",
  "spl-token 4.0.2",
