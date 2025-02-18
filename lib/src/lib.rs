@@ -29,4 +29,18 @@ pub use solana_program::{
 pub use thiserror::Error;
 
 #[cfg(feature = "pinocchio")]
-pub use pinocchio::{account_info::AccountInfo, entrypoint, msg, pubkey::Pubkey, ProgramResult};
+pub use pinocchio::{
+    account_info::AccountInfo,
+    entrypoint,
+    instruction::{AccountMeta, Instruction},
+    msg,
+    program_error::ProgramError,
+    pubkey::{self, Pubkey},
+    ProgramResult,
+};
+
+#[cfg(feature = "pinocchio")]
+pub use pinocchio_pubkey::declare_id;
+
+#[cfg(feature = "pinocchio")]
+pub use pinocchio_system as system_program;
