@@ -1,7 +1,7 @@
 mod cpi;
 mod loaders;
-pub mod macros;
 mod log;
+pub mod macros;
 mod traits;
 mod utils;
 
@@ -12,6 +12,8 @@ pub use utils::*;
 
 pub use bytemuck::{Pod, Zeroable};
 pub use num_enum::{IntoPrimitive, TryFromPrimitive};
+
+#[cfg(not(feature = "pinocchio"))]
 pub use solana_program::{
     account_info::AccountInfo,
     clock::Clock,
@@ -23,4 +25,22 @@ pub use solana_program::{
     system_program, sysvar,
     sysvar::Sysvar,
 };
+
 pub use thiserror::Error;
+
+#[cfg(feature = "pinocchio")]
+pub use pinocchio::{
+    account_info::AccountInfo,
+    entrypoint,
+    instruction::{AccountMeta, Instruction},
+    msg,
+    program_error::ProgramError,
+    pubkey::{self, Pubkey},
+    ProgramResult,
+};
+
+#[cfg(feature = "pinocchio")]
+pub use pinocchio_pubkey::declare_id;
+
+#[cfg(feature = "pinocchio")]
+pub use pinocchio_system as system_program;
