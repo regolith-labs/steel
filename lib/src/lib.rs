@@ -1,12 +1,18 @@
+#[cfg(not(feature = "pinocchio"))]
 mod cpi;
 mod loaders;
 mod log;
 pub mod macros;
+#[cfg(feature = "pinocchio")]
+mod pinocchio_cpi;
 mod traits;
 mod utils;
 
+#[cfg(not(feature = "pinocchio"))]
 pub use cpi::*;
 pub use log::*;
+#[cfg(feature = "pinocchio")]
+pub use pinocchio_cpi::*;
 pub use traits::*;
 pub use utils::*;
 
