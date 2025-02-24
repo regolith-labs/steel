@@ -1,7 +1,7 @@
 mod cpi;
 mod loaders;
-pub mod macros;
 mod log;
+pub mod macros;
 mod traits;
 mod utils;
 
