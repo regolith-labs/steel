@@ -24,12 +24,8 @@ macro_rules! impl_from_bytes {
 macro_rules! impl_instruction_from_bytes {
     ($struct_name:ident) => {
         impl $struct_name {
-            pub fn try_from_bytes(
-                data: &[u8],
-            ) -> Result<&Self, solana_program::program_error::ProgramError> {
-                bytemuck::try_from_bytes::<Self>(data).or(Err(
-                    solana_program::program_error::ProgramError::InvalidInstructionData,
-                ))
+            pub fn try_from_bytes(data: &[u8]) -> Result<&Self, ProgramError> {
+                bytemuck::try_from_bytes::<Self>(data).or(Err(ProgramError::InvalidInstructionData))
             }
         }
     };
@@ -48,28 +44,21 @@ macro_rules! account {
 
         impl $crate::AccountValidation for $struct_name {
             #[track_caller]
-            fn assert<F>(
-                &self,
-                condition: F,
-            ) -> Result<&Self, solana_program::program_error::ProgramError>
+            fn assert<F>(&self, condition: F) -> Result<&Self, ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
                     return Err(trace(
                         "Account data is invalid",
-                        solana_program::program_error::ProgramError::InvalidAccountData,
+                        ProgramError::InvalidAccountData,
                     ));
                 }
                 Ok(self)
             }
 
             #[track_caller]
-            fn assert_err<F>(
-                &self,
-                condition: F,
-                err: solana_program::program_error::ProgramError,
-            ) -> Result<&Self, solana_program::program_error::ProgramError>
+            fn assert_err<F>(&self, condition: F, err: ProgramError) -> Result<&Self, ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
@@ -80,35 +69,28 @@ macro_rules! account {
             }
 
             #[track_caller]
-            fn assert_msg<F>(
-                &self,
-                condition: F,
-                msg: &str,
-            ) -> Result<&Self, solana_program::program_error::ProgramError>
+            fn assert_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
                     return Err(trace(
                         format!("Account data is invalid: {}", msg).as_str(),
-                        solana_program::program_error::ProgramError::InvalidAccountData,
+                        ProgramError::InvalidAccountData,
                     ));
                 }
                 Ok(self)
             }
 
             #[track_caller]
-            fn assert_mut<F>(
-                &mut self,
-                condition: F,
-            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+            fn assert_mut<F>(&mut self, condition: F) -> Result<&mut Self, ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
                     return Err(trace(
                         "Account data is invalid",
-                        solana_program::program_error::ProgramError::InvalidAccountData,
+                        ProgramError::InvalidAccountData,
                     ));
                 }
                 Ok(self)
@@ -118,8 +100,8 @@ macro_rules! account {
             fn assert_mut_err<F>(
                 &mut self,
                 condition: F,
-                err: solana_program::program_error::ProgramError,
-            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+                err: ProgramError,
+            ) -> Result<&mut Self, ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
@@ -134,14 +116,14 @@ macro_rules! account {
                 &mut self,
                 condition: F,
                 msg: &str,
-            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+            ) -> Result<&mut Self, ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
                     return Err(trace(
                         format!("Account data is invalid: {}", msg).as_str(),
-                        solana_program::program_error::ProgramError::InvalidAccountData,
+                        ProgramError::InvalidAccountData,
                     ));
                 }
                 Ok(self)
@@ -153,9 +135,9 @@ macro_rules! account {
 #[macro_export]
 macro_rules! error {
     ($struct_name:ident) => {
-        impl From<$struct_name> for solana_program::program_error::ProgramError {
+        impl From<$struct_name> for ProgramError {
             fn from(e: $struct_name) -> Self {
-                solana_program::program_error::ProgramError::Custom(e as u32)
+                ProgramError::Custom(e as u32)
             }
         }
     };

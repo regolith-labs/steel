@@ -1,5 +1,10 @@
 use bytemuck::Pod;
+
+#[cfg(not(feature = "pinocchio"))]
 use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+
+#[cfg(feature = "pinocchio")]
+use pinocchio::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 
 pub trait AccountDeserialize {
     fn try_from_bytes(data: &[u8]) -> Result<&Self, ProgramError>;
@@ -12,20 +17,17 @@ where
 {
     fn try_from_bytes(data: &[u8]) -> Result<&Self, ProgramError> {
         if Self::discriminator().ne(&data[0]) {
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+            return Err(ProgramError::InvalidAccountData);
         }
-        bytemuck::try_from_bytes::<Self>(&data[8..]).or(Err(
-            solana_program::program_error::ProgramError::InvalidAccountData,
-        ))
+        bytemuck::try_from_bytes::<Self>(&data[8..]).or(Err(ProgramError::InvalidAccountData))
     }
 
     fn try_from_bytes_mut(data: &mut [u8]) -> Result<&mut Self, ProgramError> {
         if Self::discriminator().ne(&data[0]) {
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+            return Err(ProgramError::InvalidAccountData);
         }
-        bytemuck::try_from_bytes_mut::<Self>(&mut data[8..]).or(Err(
-            solana_program::program_error::ProgramError::InvalidAccountData,
-        ))
+        bytemuck::try_from_bytes_mut::<Self>(&mut data[8..])
+            .or(Err(ProgramError::InvalidAccountData))
     }
 }
 
@@ -46,13 +48,11 @@ where
 {
     fn try_header_from_bytes(data: &[u8]) -> Result<(&Self, &[u8]), ProgramError> {
         if Self::discriminator().ne(&data[0]) {
-            return Err(solana_program::program_error::ProgramError::InvalidAccountData);
+            return Err(ProgramError::InvalidAccountData);
         }
         let (prefix, remainder) = data[8..].split_at(std::mem::size_of::<T>());
         Ok((
-            bytemuck::try_from_bytes::<Self>(prefix).or(Err(
-                solana_program::program_error::ProgramError::InvalidAccountData,
-            ))?,
+            bytemuck::try_from_bytes::<Self>(prefix).or(Err(ProgramError::InvalidAccountData))?,
             remainder,
         ))
     }
@@ -60,9 +60,8 @@ where
     fn try_header_from_bytes_mut(data: &mut [u8]) -> Result<(&mut Self, &mut [u8]), ProgramError> {
         let (prefix, remainder) = data[8..].split_at_mut(std::mem::size_of::<T>());
         Ok((
-            bytemuck::try_from_bytes_mut::<Self>(prefix).or(Err(
-                solana_program::program_error::ProgramError::InvalidAccountData,
-            ))?,
+            bytemuck::try_from_bytes_mut::<Self>(prefix)
+                .or(Err(ProgramError::InvalidAccountData))?,
             remainder,
         ))
     }
@@ -140,13 +139,26 @@ pub trait AsSplToken {
     ) -> Result<spl_token::state::Account, ProgramError>;
 }
 
+#[cfg(not(feature = "pinocchio"))]
 pub trait LamportTransfer<'a, 'info> {
     fn send(&'a self, lamports: u64, to: &'a AccountInfo<'info>);
     fn collect(&'a self, lamports: u64, from: &'a AccountInfo<'info>) -> Result<(), ProgramError>;
 }
 
+#[cfg(not(feature = "pinocchio"))]
 pub trait CloseAccount<'a, 'info> {
     fn close(&'a self, to: &'a AccountInfo<'info>) -> Result<(), ProgramError>;
+}
+
+#[cfg(feature = "pinocchio")]
+pub trait LamportTransfer {
+    fn send(&self, lamports: u64, to: AccountInfo);
+    fn collect(&self, lamports: u64, from: AccountInfo) -> Result<(), ProgramError>;
+}
+
+#[cfg(feature = "pinocchio")]
+pub trait CloseAccount {
+    fn close(&self, to: AccountInfo) -> Result<(), ProgramError>;
 }
 
 pub trait Loggable {
