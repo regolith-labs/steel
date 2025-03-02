@@ -1,5 +1,9 @@
 use bytemuck::Pod;
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use solana_program::program_error::ProgramError;
+
+pub trait Discriminator {
+    fn discriminator() -> u8;
+}
 
 pub trait AccountDeserialize {
     fn try_from_bytes(data: &[u8]) -> Result<&Self, ProgramError>;
@@ -68,98 +72,10 @@ where
     }
 }
 
-pub trait AccountValidation {
-    fn assert<F>(&self, condition: F) -> Result<&Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool;
-
-    fn assert_err<F>(&self, condition: F, err: ProgramError) -> Result<&Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool;
-
-    fn assert_msg<F>(&self, condition: F, msg: &str) -> Result<&Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool;
-
-    fn assert_mut<F>(&mut self, condition: F) -> Result<&mut Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool;
-
-    fn assert_mut_err<F>(
-        &mut self,
-        condition: F,
-        err: ProgramError,
-    ) -> Result<&mut Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool;
-
-    fn assert_mut_msg<F>(&mut self, condition: F, msg: &str) -> Result<&mut Self, ProgramError>
-    where
-        F: Fn(&Self) -> bool;
-}
-
-pub trait AccountInfoValidation {
-    fn is_signer(&self) -> Result<&Self, ProgramError>;
-    fn is_writable(&self) -> Result<&Self, ProgramError>;
-    fn is_executable(&self) -> Result<&Self, ProgramError>;
-    fn is_empty(&self) -> Result<&Self, ProgramError>;
-    fn is_type<T: Discriminator>(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError>;
-    fn has_owner(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn has_seeds(&self, seeds: &[&[u8]], program_id: &Pubkey) -> Result<&Self, ProgramError>;
-}
-
-pub trait Discriminator {
-    fn discriminator() -> u8;
-}
-
-/// Performs:
-/// 1. Program owner check
-/// 2. Discriminator byte check
-/// 3. Checked bytemuck conversion of account data to &T or &mut T.
-pub trait AsAccount {
-    fn as_account<T>(&self, program_id: &Pubkey) -> Result<&T, ProgramError>
-    where
-        T: AccountDeserialize + Discriminator + Pod;
-
-    fn as_account_mut<T>(&self, program_id: &Pubkey) -> Result<&mut T, ProgramError>
-    where
-        T: AccountDeserialize + Discriminator + Pod;
-}
-
-#[cfg(feature = "spl")]
-pub trait AsSplToken {
-    fn as_mint(&self) -> Result<spl_token::state::Mint, ProgramError>;
-    fn as_token_account(&self) -> Result<spl_token::state::Account, ProgramError>;
-    fn as_associated_token_account(
-        &self,
-        owner: &Pubkey,
-        mint: &Pubkey,
-    ) -> Result<spl_token::state::Account, ProgramError>;
-}
-
-pub trait LamportTransfer<'a, 'info> {
-    fn send(&'a self, lamports: u64, to: &'a AccountInfo<'info>);
-    fn collect(&'a self, lamports: u64, from: &'a AccountInfo<'info>) -> Result<(), ProgramError>;
-}
-
-pub trait CloseAccount<'a, 'info> {
-    fn close(&'a self, to: &'a AccountInfo<'info>) -> Result<(), ProgramError>;
-}
-
-pub trait Loggable {
-    fn log(&self);
-    fn log_return(&self);
-}
-
-pub trait ProgramOwner {
-    fn owner() -> Pubkey;
-}
-
 #[cfg(test)]
 mod tests {
+    use crate::AccountDeserialize;
+
     use super::*;
     use bytemuck::{Pod, Zeroable};
 
