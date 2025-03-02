@@ -4,8 +4,10 @@ mod log;
 pub mod macros;
 mod traits;
 mod utils;
+mod spl2022_cpi;
 
 pub use cpi::*;
+pub use spl2022_cpi::*;
 pub use log::*;
 pub use traits::*;
 pub use utils::*;
