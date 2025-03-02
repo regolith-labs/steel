@@ -1,13 +1,14 @@
-mod cpi;
-mod loaders;
+mod account;
 mod log;
 pub mod macros;
-mod traits;
+#[cfg(feature = "spl")]
+mod spl;
 mod utils;
 
-pub use cpi::*;
+pub use account::*;
 pub use log::*;
-pub use traits::*;
+#[cfg(feature = "spl")]
+pub use spl::*;
 pub use utils::*;
 
 pub use bytemuck::{Pod, Zeroable};

@@ -13,3 +13,9 @@ pub fn trace(msg: &str, error: ProgramError) -> ProgramError {
     log(format!("{}: {}", msg, caller));
     error
 }
+
+/// Supports logging.
+pub trait Loggable {
+    fn log(&self);
+    fn log_return(&self);
+}
