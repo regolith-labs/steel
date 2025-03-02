@@ -1,13 +1,12 @@
-mod cpi;
-mod loaders;
+mod account;
 mod log;
 pub mod macros;
-mod traits;
+mod spl;
 mod utils;
 
-pub use cpi::*;
+pub use account::*;
 pub use log::*;
-pub use traits::*;
+pub use spl::*;
 pub use utils::*;
 
 pub use bytemuck::{Pod, Zeroable};
