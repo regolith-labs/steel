@@ -83,7 +83,7 @@ impl AsSpl for AccountInfo<'_> {
             spl_token_2022::ID => unsafe {
                 // Validate account data length.
                 let data = self.try_borrow_data()?;
-                if data.len() != spl_token_2022::state::Account::LEN {
+                if data.len() < spl_token_2022::state::Account::LEN {
                     return Err(trace(
                         "Token account data length is invalid",
                         ProgramError::InvalidAccountData,
