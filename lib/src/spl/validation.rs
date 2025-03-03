@@ -26,7 +26,10 @@ impl AsSpl for AccountInfo<'_> {
                 // Validate account data length.
                 let data = self.try_borrow_data()?;
                 if data.len() != spl_token::state::Mint::LEN {
-                    return Err(ProgramError::InvalidAccountData);
+                    return Err(trace(
+                        "Mint data length is invalid",
+                        ProgramError::InvalidAccountData,
+                    ));
                 }
 
                 // Deserialize account data.
@@ -40,7 +43,10 @@ impl AsSpl for AccountInfo<'_> {
                 // Validate account data length.
                 let data = self.try_borrow_data()?;
                 if data.len() != spl_token_2022::state::Mint::LEN {
-                    return Err(ProgramError::InvalidAccountData);
+                    return Err(trace(
+                        "Mint data length is invalid",
+                        ProgramError::InvalidAccountData,
+                    ));
                 }
 
                 // Deserialize account data.
@@ -61,7 +67,10 @@ impl AsSpl for AccountInfo<'_> {
                 // Validate account data length.
                 let data = self.try_borrow_data()?;
                 if data.len() != spl_token::state::Account::LEN {
-                    return Err(ProgramError::InvalidAccountData);
+                    return Err(trace(
+                        "Token account data length is invalid",
+                        ProgramError::InvalidAccountData,
+                    ));
                 }
 
                 // Deserialize account data.
@@ -75,7 +84,10 @@ impl AsSpl for AccountInfo<'_> {
                 // Validate account data length.
                 let data = self.try_borrow_data()?;
                 if data.len() != spl_token_2022::state::Account::LEN {
-                    return Err(ProgramError::InvalidAccountData);
+                    return Err(trace(
+                        "Token account data length is invalid",
+                        ProgramError::InvalidAccountData,
+                    ));
                 }
 
                 // Deserialize account data.
