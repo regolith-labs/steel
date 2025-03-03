@@ -3,7 +3,7 @@ resolver = "2"
 members = ["cli", "lib"]
 
 [workspace.package]
-version = "3.0.3"
+version = "4.0.0"
 edition = "2021"
 license = "Apache-2.0"
 homepage = "https://steel.new"
