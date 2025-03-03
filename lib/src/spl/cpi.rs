@@ -17,7 +17,7 @@ pub fn create_associated_token_account<'info>(
             funder_info.key,
             owner_info.key,
             mint_info.key,
-            &spl_token::ID,
+            &token_program.key,
         ),
         &[
             funder_info.clone(),
@@ -39,8 +39,8 @@ pub fn close_token_account<'info>(
     token_program: &AccountInfo<'info>,
 ) -> ProgramResult {
     solana_program::program::invoke(
-        &spl_token::instruction::close_account(
-            &spl_token::ID,
+        &spl_token_2022::instruction::close_account(
+            &token_program.key,
             &account_info.key,
             &destination_info.key,
             &owner_info.key,
@@ -84,8 +84,8 @@ pub fn close_token_account_signed_with_bump<'info>(
     bump: u8,
 ) -> ProgramResult {
     invoke_signed_with_bump(
-        &spl_token::instruction::close_account(
-            &spl_token::ID,
+        &spl_token_2022::instruction::close_account(
+            &token_program.key,
             &account_info.key,
             &destination_info.key,
             &owner_info.key,
@@ -110,9 +110,10 @@ pub fn transfer<'info>(
     token_program: &AccountInfo<'info>,
     amount: u64,
 ) -> ProgramResult {
+    #[allow(deprecated)]
     solana_program::program::invoke(
-        &spl_token::instruction::transfer(
-            &spl_token::ID,
+        &spl_token_2022::instruction::transfer(
+            &token_program.key,
             from_info.key,
             to_info.key,
             authority_info.key,
@@ -159,9 +160,10 @@ pub fn transfer_signed_with_bump<'info>(
     seeds: &[&[u8]],
     bump: u8,
 ) -> ProgramResult {
+    #[allow(deprecated)]
     invoke_signed_with_bump(
-        &spl_token::instruction::transfer(
-            &spl_token::ID,
+        &spl_token_2022::instruction::transfer(
+            &token_program.key,
             from_info.key,
             to_info.key,
             authority_info.key,
