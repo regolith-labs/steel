@@ -11,12 +11,16 @@ repository.workspace = true
 keywords.workspace = true
 
 [features]
-default = ["spl"]
+default = []
 spl = ["spl-token", "spl-token-2022", "spl-associated-token-account"]
 
 [dependencies]
 bytemuck.workspace = true
 num_enum.workspace = true
+pinocchio.workspace = true
+pinocchio-log.workspace = true
+pinocchio-pubkey.workspace = true
+pinocchio-system.workspace = true
 solana-program.workspace = true
 spl-token = { workspace = true, optional = true }
 spl-token-2022 = { workspace = true, optional = true }

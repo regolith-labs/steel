@@ -26,9 +26,9 @@ macro_rules! impl_instruction_from_bytes {
         impl $struct_name {
             pub fn try_from_bytes(
                 data: &[u8],
-            ) -> Result<&Self, solana_program::program_error::ProgramError> {
+            ) -> Result<&Self, pinocchio::program_error::ProgramError> {
                 bytemuck::try_from_bytes::<Self>(data).or(Err(
-                    solana_program::program_error::ProgramError::InvalidInstructionData,
+                    pinocchio::program_error::ProgramError::InvalidInstructionData,
                 ))
             }
         }
@@ -51,14 +51,14 @@ macro_rules! account {
             fn assert<F>(
                 &self,
                 condition: F,
-            ) -> Result<&Self, solana_program::program_error::ProgramError>
+            ) -> Result<&Self, pinocchio::program_error::ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
                     return Err(trace(
                         "Account data is invalid",
-                        solana_program::program_error::ProgramError::InvalidAccountData,
+                        pinocchio::program_error::ProgramError::InvalidAccountData,
                     ));
                 }
                 Ok(self)
@@ -68,8 +68,8 @@ macro_rules! account {
             fn assert_err<F>(
                 &self,
                 condition: F,
-                err: solana_program::program_error::ProgramError,
-            ) -> Result<&Self, solana_program::program_error::ProgramError>
+                err: pinocchio::program_error::ProgramError,
+            ) -> Result<&Self, pinocchio::program_error::ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
@@ -84,14 +84,14 @@ macro_rules! account {
                 &self,
                 condition: F,
                 msg: &str,
-            ) -> Result<&Self, solana_program::program_error::ProgramError>
+            ) -> Result<&Self, pinocchio::program_error::ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
                     return Err(trace(
                         format!("Account data is invalid: {}", msg).as_str(),
-                        solana_program::program_error::ProgramError::InvalidAccountData,
+                        pinocchio::program_error::ProgramError::InvalidAccountData,
                     ));
                 }
                 Ok(self)
@@ -101,14 +101,14 @@ macro_rules! account {
             fn assert_mut<F>(
                 &mut self,
                 condition: F,
-            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+            ) -> Result<&mut Self, pinocchio::program_error::ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
                     return Err(trace(
                         "Account data is invalid",
-                        solana_program::program_error::ProgramError::InvalidAccountData,
+                        pinocchio::program_error::ProgramError::InvalidAccountData,
                     ));
                 }
                 Ok(self)
@@ -118,8 +118,8 @@ macro_rules! account {
             fn assert_mut_err<F>(
                 &mut self,
                 condition: F,
-                err: solana_program::program_error::ProgramError,
-            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+                err: pinocchio::program_error::ProgramError,
+            ) -> Result<&mut Self, pinocchio::program_error::ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
@@ -134,14 +134,14 @@ macro_rules! account {
                 &mut self,
                 condition: F,
                 msg: &str,
-            ) -> Result<&mut Self, solana_program::program_error::ProgramError>
+            ) -> Result<&mut Self, pinocchio::program_error::ProgramError>
             where
                 F: Fn(&Self) -> bool,
             {
                 if !condition(self) {
                     return Err(trace(
                         format!("Account data is invalid: {}", msg).as_str(),
-                        solana_program::program_error::ProgramError::InvalidAccountData,
+                        pinocchio::program_error::ProgramError::InvalidAccountData,
                     ));
                 }
                 Ok(self)
@@ -153,9 +153,9 @@ macro_rules! account {
 #[macro_export]
 macro_rules! error {
     ($struct_name:ident) => {
-        impl From<$struct_name> for solana_program::program_error::ProgramError {
+        impl From<$struct_name> for pinocchio::program_error::ProgramError {
             fn from(e: $struct_name) -> Self {
-                solana_program::program_error::ProgramError::Custom(e as u32)
+                pinocchio::program_error::ProgramError::Custom(e as u32)
             }
         }
     };
@@ -169,11 +169,11 @@ macro_rules! event {
 
         impl $crate::Loggable for $struct_name {
             fn log(&self) {
-                solana_program::log::sol_log_data(&[self.to_bytes()]);
+                pinocchio::log::sol_log_data(&[self.to_bytes()]);
             }
 
             fn log_return(&self) {
-                solana_program::program::set_return_data(self.to_bytes());
+                pinocchio::program::set_return_data(self.to_bytes());
             }
         }
     };
