@@ -20,7 +20,7 @@ pub fn load_client_and_signer(
     if let (Some(client_url), Some(signer_uri)) = (&client_url, &signer_uri) {
         let client_url = normalize_to_url_if_moniker(client_url);
         let commitment = commitment_arg.unwrap_or(CommitmentLevel::Confirmed);
-        let signer = load_signer(&signer_uri)?;
+        let signer = load_signer(signer_uri)?;
         Ok(((client_url.clone(), commitment.into()), signer))
     } else {
         let Config {
@@ -49,7 +49,7 @@ pub fn load_client_and_signer(
 pub fn load_signer(signer_uri: &str) -> anyhow::Result<Box<dyn Signer + 'static>> {
     signer_from_path(
         &clap_v3::ArgMatches::default(),
-        &signer_uri,
+        signer_uri,
         "keypair",
         &mut None,
     )
@@ -61,7 +61,7 @@ fn load_config() -> anyhow::Result<Config> {
     let config_file = solana_cli_config::CONFIG_FILE
         .as_ref()
         .ok_or_else(|| anyhow!("unable to get config file path"))?;
-    Config::load(&config_file)
+    Config::load(config_file)
         .map_err(|e| anyhow!("failed to load Solana CLI config file {config_file}: {e}"))
 }
 
@@ -74,9 +74,9 @@ pub enum CommitmentLevel {
     Finalized,
 }
 
-impl Into<CommitmentConfig> for CommitmentLevel {
-    fn into(self) -> CommitmentConfig {
-        match self {
+impl From<CommitmentLevel> for CommitmentConfig {
+    fn from(val: CommitmentLevel) -> Self {
+        match val {
             CommitmentLevel::Processed => CommitmentConfig::processed(),
             CommitmentLevel::Confirmed => CommitmentConfig::confirmed(),
             CommitmentLevel::Finalized => CommitmentConfig::finalized(),

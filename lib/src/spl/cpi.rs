@@ -17,7 +17,7 @@ pub fn create_associated_token_account<'info>(
             funder_info.key,
             owner_info.key,
             mint_info.key,
-            &token_program.key,
+            token_program.key,
         ),
         &[
             funder_info.clone(),
@@ -40,11 +40,11 @@ pub fn close_token_account<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::close_account(
-            &token_program.key,
-            &account_info.key,
-            &destination_info.key,
-            &owner_info.key,
-            &[&owner_info.key],
+            token_program.key,
+            account_info.key,
+            destination_info.key,
+            owner_info.key,
+            &[owner_info.key],
         )?,
         &[
             token_program.clone(),
@@ -85,11 +85,11 @@ pub fn close_token_account_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::close_account(
-            &token_program.key,
-            &account_info.key,
-            &destination_info.key,
-            &owner_info.key,
-            &[&owner_info.key],
+            token_program.key,
+            account_info.key,
+            destination_info.key,
+            owner_info.key,
+            &[owner_info.key],
         )?,
         &[
             token_program.clone(),
@@ -113,7 +113,7 @@ pub fn transfer<'info>(
     #[allow(deprecated)]
     solana_program::program::invoke(
         &spl_token_2022::instruction::transfer(
-            &token_program.key,
+            token_program.key,
             from_info.key,
             to_info.key,
             authority_info.key,
@@ -163,7 +163,7 @@ pub fn transfer_signed_with_bump<'info>(
     #[allow(deprecated)]
     invoke_signed_with_bump(
         &spl_token_2022::instruction::transfer(
-            &token_program.key,
+            token_program.key,
             from_info.key,
             to_info.key,
             authority_info.key,
@@ -193,7 +193,7 @@ pub fn transfer_checked<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::transfer_checked(
-            &token_program.key,
+            token_program.key,
             from_info.key,
             mint_info.key,
             to_info.key,
@@ -251,7 +251,7 @@ pub fn transfer_checked_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::transfer_checked(
-            &token_program.key,
+            token_program.key,
             from_info.key,
             mint_info.key,
             to_info.key,
@@ -305,7 +305,7 @@ pub fn mint_to_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::mint_to(
-            &token_program.key,
+            token_program.key,
             mint_info.key,
             to_info.key,
             authority_info.key,
@@ -359,7 +359,7 @@ pub fn mint_to_checked_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::mint_to_checked(
-            &token_program.key,
+            token_program.key,
             mint_info.key,
             to_info.key,
             authority_info.key,
@@ -388,7 +388,7 @@ pub fn burn<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::burn(
-            &token_program.key,
+            token_program.key,
             token_account_info.key,
             mint_info.key,
             authority_info.key,
@@ -437,7 +437,7 @@ pub fn burn_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::burn(
-            &token_program.key,
+            token_program.key,
             token_account_info.key,
             mint_info.key,
             authority_info.key,
@@ -466,7 +466,7 @@ pub fn burn_checked<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::burn_checked(
-            &token_program.key,
+            token_program.key,
             token_account_info.key,
             mint_info.key,
             authority_info.key,
@@ -519,7 +519,7 @@ pub fn burn_checked_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::burn_checked(
-            &token_program.key,
+            token_program.key,
             token_account_info.key,
             mint_info.key,
             authority_info.key,
@@ -548,7 +548,7 @@ pub fn freeze<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::freeze_account(
-            &token_program.key,
+            token_program.key,
             account_info.key,
             mint_info.key,
             owner_info.key,
@@ -597,7 +597,7 @@ pub fn freeze_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::freeze_account(
-            &token_program.key,
+            token_program.key,
             account_info.key,
             mint_info.key,
             owner_info.key,
@@ -626,7 +626,7 @@ pub fn initialize_mint<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::initialize_mint(
-            &token_program.key,
+            token_program.key,
             mint_info.key,
             mint_authority_info.key,
             freeze_authority_info.map(|i| i.key),
@@ -677,7 +677,7 @@ pub fn initialize_mint_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::initialize_mint(
-            &token_program.key,
+            token_program.key,
             mint_info.key,
             mint_authority_info.key,
             freeze_authority_info.map(|i| i.key),
@@ -705,7 +705,7 @@ pub fn thaw_account<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::thaw_account(
-            &token_program.key,
+            token_program.key,
             token_account_info.key,
             mint_info.key,
             authority_info.key,
@@ -755,7 +755,7 @@ pub fn thaw_account_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::thaw_account(
-            &token_program.key,
+            token_program.key,
             token_account_info.key,
             mint_info.key,
             owner_info.key,
@@ -785,7 +785,7 @@ pub fn set_authority<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::set_authority(
-            &token_program.key,
+            token_program.key,
             account_or_mint.key,
             new_authority_info.map(|i| i.key),
             authority_type,
@@ -835,7 +835,7 @@ pub fn set_authority_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::set_authority(
-            &token_program.key,
+            token_program.key,
             account_or_mint.key,
             new_authority_info.map(|i| i.key),
             authority_type,
@@ -862,7 +862,7 @@ pub fn revoke<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::revoke(
-            &token_program.key,
+            token_program.key,
             source_info.key,
             authority_info.key,
             &[authority_info.key],
@@ -898,7 +898,7 @@ pub fn revoke_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::revoke(
-            &token_program.key,
+            token_program.key,
             source_info.key,
             authority_info.key,
             &[authority_info.key],
@@ -973,7 +973,7 @@ pub fn approve_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::approve(
-            &token_program.key,
+            token_program.key,
             source_info.key,
             delegate_info.key,
             delegate_info.key,
@@ -1001,7 +1001,7 @@ pub fn approve_checked<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::approve_checked(
-            &token_program.key,
+            token_program.key,
             mint_info.key,
             source_info.key,
             delegate_info.key,
@@ -1051,7 +1051,7 @@ pub fn approve_checked_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::approve_checked(
-            &token_program.key,
+            token_program.key,
             source_info.key,
             mint_info.key,
             delegate_info.key,
@@ -1076,7 +1076,7 @@ pub fn initialize_multisig<'info>(
 ) -> ProgramResult {
     solana_program::program::invoke(
         &spl_token_2022::instruction::initialize_multisig(
-            &token_program.key,
+            token_program.key,
             multisig_info.key,
             &[signer_info.key],
             n,
@@ -1108,7 +1108,7 @@ pub fn initialize_multisig_signed_with_bump<'info>(
 ) -> ProgramResult {
     invoke_signed_with_bump(
         &spl_token_2022::instruction::initialize_multisig(
-            &token_program.key,
+            token_program.key,
             multisig_info.key,
             &[signer_info.key],
             m,

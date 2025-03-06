@@ -56,7 +56,7 @@ impl AsSpl for AccountInfo<'_> {
                 ))?;
                 Ok(Mint::V1(mint))
             },
-            _ => return Err(ProgramError::InvalidAccountOwner),
+            _ => Err(ProgramError::InvalidAccountOwner),
         }
     }
 
@@ -97,7 +97,7 @@ impl AsSpl for AccountInfo<'_> {
                 ))?;
                 Ok(TokenAccount::V1(account))
             },
-            _ => return Err(ProgramError::InvalidAccountOwner),
+            _ => Err(ProgramError::InvalidAccountOwner),
         }
     }
 
