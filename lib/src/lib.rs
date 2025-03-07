@@ -1,12 +1,14 @@
 mod account;
 mod log;
 pub mod macros;
+mod numeric;
 #[cfg(feature = "spl")]
 mod spl;
 mod utils;
 
 pub use account::*;
 pub use log::*;
+pub use numeric::*;
 #[cfg(feature = "spl")]
 pub use spl::*;
 pub use utils::*;
