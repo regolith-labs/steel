@@ -25,6 +25,11 @@ impl Numeric {
         Self::from_i80f48(i)
     }
 
+    /// Returns the `Numeric` as a `u64`.
+    pub fn to_u64(&self) -> u64 {
+        self.floor().to_i80f48().to_num::<u64>()
+    }
+
     /// Creates a new `Numeric` from a fraction.
     pub fn from_fraction(numerator: u64, denominator: u64) -> Self {
         let f = I80F48::from_num(numerator) / I80F48::from_num(denominator);
@@ -36,16 +41,16 @@ impl Numeric {
         Self::from_i80f48(self.to_i80f48().floor())
     }
 
-    /// Returns the `Numeric` as an `I80F48`.
-    pub fn to_i80f48(&self) -> I80F48 {
-        I80F48::from_bits(i128::from_le_bytes(self.bits))
-    }
-
     /// Creates a new `Numeric` from an `I80F48`.
     pub fn from_i80f48(value: I80F48) -> Self {
         Self {
             bits: value.to_bits().to_le_bytes(),
         }
+    }
+
+    /// Returns the `Numeric` as an `I80F48`.
+    pub fn to_i80f48(&self) -> I80F48 {
+        I80F48::from_bits(i128::from_le_bytes(self.bits))
     }
 }
 
