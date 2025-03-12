@@ -19,6 +19,7 @@ clap_v3 = { version = "3", package = "clap" }
 anyhow = "1"
 colored = "2.0"
 git2 = "0.16"
+fixed = "=1.28"
 indicatif = "0.17"
 num_enum = "0.7"
 prettyplease = "0.2"
