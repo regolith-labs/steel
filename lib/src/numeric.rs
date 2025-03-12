@@ -1,6 +1,6 @@
 use std::{
     cmp::Ordering,
-    ops::{Add, AddAssign, Div, Mul, Sub},
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign},
 };
 
 use crate::{Pod, Zeroable};
@@ -92,15 +92,33 @@ impl AddAssign for Numeric {
     }
 }
 
-impl PartialOrd for Numeric {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.to_i80f48().partial_cmp(&other.to_i80f48())
+impl SubAssign for Numeric {
+    fn sub_assign(&mut self, other: Numeric) {
+        *self = *self - other;
+    }
+}
+
+impl MulAssign for Numeric {
+    fn mul_assign(&mut self, other: Numeric) {
+        *self = *self * other;
+    }
+}
+
+impl DivAssign for Numeric {
+    fn div_assign(&mut self, other: Numeric) {
+        *self = *self / other;
     }
 }
 
 impl PartialEq for Numeric {
     fn eq(&self, other: &Self) -> bool {
         self.to_i80f48() == other.to_i80f48()
+    }
+}
+
+impl PartialOrd for Numeric {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        self.to_i80f48().partial_cmp(&other.to_i80f48())
     }
 }
 
