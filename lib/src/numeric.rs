@@ -167,6 +167,30 @@ mod tests {
     }
 
     #[test]
+    fn test_numeric_sub_assign() {
+        let mut a = Numeric::from_i80f48(fixed::types::I80F48::from_num(5));
+        let b = Numeric::from_i80f48(fixed::types::I80F48::from_num(3));
+        a -= b;
+        assert_eq!(a.to_i80f48(), fixed::types::I80F48::from_num(2));
+    }
+
+    #[test]
+    fn test_numeric_mul_assign() {
+        let mut a = Numeric::from_i80f48(fixed::types::I80F48::from_num(5));
+        let b = Numeric::from_i80f48(fixed::types::I80F48::from_num(3));
+        a *= b;
+        assert_eq!(a.to_i80f48(), fixed::types::I80F48::from_num(15));
+    }
+
+    #[test]
+    fn test_numeric_div_assign() {
+        let mut a = Numeric::from_i80f48(fixed::types::I80F48::from_num(15));
+        let b = Numeric::from_i80f48(fixed::types::I80F48::from_num(3));
+        a /= b;
+        assert_eq!(a.to_i80f48(), fixed::types::I80F48::from_num(5));
+    }
+
+    #[test]
     fn test_numeric_comparison() {
         let a = Numeric::from_i80f48(fixed::types::I80F48::from_num(5));
         let b = Numeric::from_i80f48(fixed::types::I80F48::from_num(3));
