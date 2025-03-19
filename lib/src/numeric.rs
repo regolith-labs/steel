@@ -6,7 +6,7 @@ use std::{
 use crate::{Pod, Zeroable};
 use fixed::types::I80F48;
 
-/// A fixed-point number with 48 bits for the integer part and 48 bits for the fractional part.
+/// A fixed-point number with 80 bits for the integer part and 48 bits for the fractional part.
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]
 pub struct Numeric {
