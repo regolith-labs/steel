@@ -42,9 +42,9 @@ pub fn new_project(args: NewArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn stub_workspace(base_path: &Path, project_name: &String, no_git: bool) -> io::Result<()> {
+fn stub_workspace(base_path: &Path, project_name: &str, no_git: bool) -> io::Result<()> {
     // Create folder
-    fs::create_dir_all(&base_path)?;
+    fs::create_dir_all(base_path)?;
 
     // Load templates
     const CARGO_TOML: &str = include_str!("template/cargo_toml");
@@ -66,7 +66,7 @@ fn stub_workspace(base_path: &Path, project_name: &String, no_git: bool) -> io::
     Ok(())
 }
 
-fn stub_api(base_path: &Path, project_name: &String) -> io::Result<()> {
+fn stub_api(base_path: &Path, project_name: &str) -> io::Result<()> {
     // Derive paths
     let api_path = base_path.join("api");
     let api_src_path = api_path.join("src");
@@ -118,7 +118,7 @@ fn stub_api(base_path: &Path, project_name: &String) -> io::Result<()> {
     Ok(())
 }
 
-fn stub_program(base_path: &Path, project_name: &String) -> io::Result<()> {
+fn stub_program(base_path: &Path, project_name: &str) -> io::Result<()> {
     // Derive paths
     let program_path = base_path.join("program");
     let program_src_path = program_path.join("src");
@@ -165,13 +165,13 @@ fn stub_program(base_path: &Path, project_name: &String) -> io::Result<()> {
     Ok(())
 }
 
-fn stub_file(template: &str, path: &Path, project_name: &String) -> io::Result<()> {
+fn stub_file(template: &str, path: &Path, project_name: &str) -> io::Result<()> {
     let content = template
         .replace("{name_lowercase}", &project_name.to_ascii_lowercase())
         .replace("{name_uppercase}", &project_name.to_ascii_uppercase())
-        .replace("{name_camelcase}", &to_camel_case(&project_name))
-        .replace("{name_typecase}", &to_type_case(&project_name))
-        .replace("{name_libcase}", &to_lib_case(&project_name));
+        .replace("{name_camelcase}", &to_camel_case(project_name))
+        .replace("{name_typecase}", &to_type_case(project_name))
+        .replace("{name_libcase}", &to_lib_case(project_name));
     fs::write(path, content)?;
     Ok(())
 }
