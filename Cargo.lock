@@ -3406,7 +3406,7 @@ checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
 
 [[package]]
 name = "steel"
-version = "4.0.0"
+version = "4.0.1"
 dependencies = [
  "bytemuck",
  "fixed",
@@ -3420,7 +3420,7 @@ dependencies = [
 
 [[package]]
 name = "steel-cli"
-version = "4.0.0"
+version = "4.0.1"
 dependencies = [
  "anyhow",
  "clap 3.2.25",

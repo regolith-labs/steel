@@ -3,7 +3,7 @@ resolver = "2"
 members = ["cli", "lib"]
 
 [workspace.package]
-version = "4.0.0"
+version = "4.0.1"
 edition = "2021"
 license = "Apache-2.0"
 homepage = "https://steel.new"
@@ -20,6 +20,7 @@ anyhow = "1"
 colored = "2.0"
 git2 = "0.16"
 fixed = "=1.28"
+half = "=2.4.1"
 indicatif = "0.17"
 num_enum = "0.7"
 prettyplease = "0.2"
