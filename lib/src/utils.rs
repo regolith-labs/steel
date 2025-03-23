@@ -7,7 +7,7 @@ pub fn parse_instruction<'a, T: std::convert::TryFrom<u8>>(
     data: &'a [u8],
 ) -> Result<(T, &'a [u8]), ProgramError> {
     // Validate the program id is valid.
-    if program_id.ne(&api_id) {
+    if program_id.ne(api_id) {
         return Err(ProgramError::IncorrectProgramId);
     }
 
