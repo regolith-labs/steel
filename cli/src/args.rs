@@ -13,7 +13,11 @@ pub struct NewArgs {
 pub struct BuildArgs {}
 
 #[derive(Parser, Debug)]
-pub struct TestArgs {}
+pub struct TestArgs {
+    /// Run tests without capturing output
+    #[arg(long)]
+    pub nocapture: bool
+}
 
 #[derive(Parser, Debug)]
 pub struct CleanArgs {}
