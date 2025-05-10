@@ -22,5 +22,7 @@ steel.workspace = true
 base64 = "0.21"
 rand = "0.8.5"
 solana-program-test = "2.1"
-solana-sdk = "2.1"
+solana-signer = "2.2"
+solana-keypair = "2.2"
+solana-transaction = "2.2"
 tokio = { version = "1.35", features = ["full"] }
