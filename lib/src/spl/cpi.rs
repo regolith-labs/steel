@@ -642,6 +642,30 @@ pub fn initialize_mint<'info>(
 }
 
 #[inline(always)]
+pub fn initialize_mint2<'info>(
+    mint_info: &AccountInfo<'info>,
+    mint_authority_info: &AccountInfo<'info>,
+    freeze_authority_info: Option<&AccountInfo<'info>>,
+    token_program: &AccountInfo<'info>,
+    decimals: u8,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_token_2022::instruction::initialize_mint2(
+            &token_program.key,
+            mint_info.key,
+            mint_authority_info.key,
+            freeze_authority_info.map(|i| i.key),
+            decimals,
+        )?,
+        &[
+            token_program.clone(),
+            mint_info.clone(),
+            mint_authority_info.clone(),
+        ],
+    )
+}
+
+#[inline(always)]
 pub fn initialize_mint_signed<'info>(
     mint_info: &AccountInfo<'info>,
     mint_authority_info: &AccountInfo<'info>,
