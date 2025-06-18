@@ -32,6 +32,35 @@ pub fn create_associated_token_account<'info>(
 }
 
 #[inline(always)]
+pub fn create_associated_token_account_idempotent<'info>(
+    funder_info: &AccountInfo<'info>,
+    owner_info: &AccountInfo<'info>,
+    token_account_info: &AccountInfo<'info>,
+    mint_info: &AccountInfo<'info>,
+    system_program: &AccountInfo<'info>,
+    token_program: &AccountInfo<'info>,
+    associated_token_program: &AccountInfo<'info>,
+) -> ProgramResult {
+    solana_program::program::invoke(
+        &spl_associated_token_account::instruction::create_associated_token_account_idempotent(
+            funder_info.key,
+            owner_info.key,
+            mint_info.key,
+            token_program.key,
+        ),
+        &[
+            funder_info.clone(),
+            owner_info.clone(),
+            token_account_info.clone(),
+            mint_info.clone(),
+            system_program.clone(),
+            token_program.clone(),
+            associated_token_program.clone(),
+        ],
+    )
+}
+
+#[inline(always)]
 pub fn close_token_account<'info>(
     account_info: &AccountInfo<'info>,
     destination_info: &AccountInfo<'info>,
