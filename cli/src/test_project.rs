@@ -2,9 +2,15 @@ use std::process::{Command, Stdio};
 
 use crate::TestArgs;
 
-pub fn test_project(_args: TestArgs) -> anyhow::Result<()> {
-    Command::new("cargo")
-        .arg("test-sbf")
+pub fn test_project(args: TestArgs) -> anyhow::Result<()> {
+    let mut command = Command::new("cargo");
+        command.arg("test-sbf");
+
+        if args.nocapture {
+            command.arg("--").arg("--nocapture");
+        }
+
+        command
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .status()
