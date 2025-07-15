@@ -4,7 +4,7 @@ use solana_program::{
     rent::Rent, sysvar::Sysvar,
 };
 
-use crate::Discriminator;
+use crate::{CloseAccount, Discriminator};
 
 /// Invokes a CPI with provided signer seeds and program id.
 #[inline(always)]
@@ -217,12 +217,5 @@ pub fn close_account<'info>(
     account_info: &AccountInfo<'info>,
     recipient: &AccountInfo<'info>,
 ) -> ProgramResult {
-    // Realloc data to zero.
-    account_info.realloc(0, true)?;
-
-    // Return rent lamports.
-    **recipient.lamports.borrow_mut() += account_info.lamports();
-    **account_info.lamports.borrow_mut() = 0;
-
-    Ok(())
+    account_info.close(recipient)
 }
