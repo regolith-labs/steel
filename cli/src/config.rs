@@ -6,7 +6,8 @@ use solana_clap_v3_utils::{
     input_validators::normalize_to_url_if_moniker, keypair::signer_from_path,
 };
 use solana_cli_config::Config;
-use solana_sdk::{commitment_config::CommitmentConfig, signer::Signer};
+use solana_signer::Signer;
+use solana_commitment_config::CommitmentConfig;
 
 /// Load a signer and a client URL from args, sourced in the following order:
 /// 1. Passed in directly to this function.

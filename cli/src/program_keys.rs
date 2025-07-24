@@ -1,4 +1,5 @@
-use solana_sdk::{signature::Keypair, signer::Signer};
+use solana_signer::Signer;
+use solana_keypair::Keypair;
 use std::{
     fs::{self},
     io::Write,
