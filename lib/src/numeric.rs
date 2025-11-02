@@ -3,12 +3,14 @@ use std::{
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign},
 };
 
-use crate::{Pod, Zeroable};
 use fixed::types::I80F48;
+use serde::{Deserialize, Serialize};
+
+use crate::{Pod, Zeroable};
 
 /// A fixed-point number with 80 bits for the integer part and 48 bits for the fractional part.
 #[repr(C)]
-#[derive(Clone, Copy, Debug, Pod, Zeroable)]
+#[derive(Clone, Copy, Debug, Pod, Zeroable, Serialize, Deserialize)]
 pub struct Numeric {
     bits: [u8; 16],
 }
