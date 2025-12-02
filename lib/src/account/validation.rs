@@ -90,7 +90,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError> {
         if self.key.ne(&address) {
             return Err(trace(
-                "Account has invalid address",
+                format!("Account has invalid address {} != {}", self.key, address).as_str(),
                 ProgramError::InvalidAccountData,
             ));
         }
@@ -101,7 +101,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
     fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError> {
         if self.owner.ne(owner) {
             return Err(trace(
-                "Account has invalid owner",
+                format!("Account has invalid owner {} != {}", self.owner, owner).as_str(),
                 ProgramError::InvalidAccountOwner,
             ));
         }
@@ -113,7 +113,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
         let pda = Pubkey::find_program_address(seeds, program_id);
         if self.key.ne(&pda.0) {
             return Err(trace(
-                "Account has invalid seeds",
+                format!("Account has invalid seeds {} != {}", self.key, pda.0).as_str(),
                 ProgramError::InvalidSeeds,
             ));
         }
@@ -149,7 +149,15 @@ impl AsAccount for AccountInfo<'_> {
             let data = self.try_borrow_data()?;
             let expected_len = 8 + std::mem::size_of::<T>();
             if data.len() != expected_len {
-                return Err(ProgramError::InvalidAccountData);
+                return Err(trace(
+                    format!(
+                        "Account data length is invalid {} != {}",
+                        data.len(),
+                        expected_len
+                    )
+                    .as_str(),
+                    ProgramError::InvalidAccountData,
+                ));
             }
 
             // Deserialize account data.
@@ -170,7 +178,15 @@ impl AsAccount for AccountInfo<'_> {
             let mut data = self.try_borrow_mut_data()?;
             let expected_len = 8 + std::mem::size_of::<T>();
             if data.len() != expected_len {
-                return Err(ProgramError::InvalidAccountData);
+                return Err(trace(
+                    format!(
+                        "Account data length is invalid {} != {}",
+                        data.len(),
+                        expected_len
+                    )
+                    .as_str(),
+                    ProgramError::InvalidAccountData,
+                ));
             }
 
             // Deserialize account data.
