@@ -1,16 +1,18 @@
+use crate::workspace::*;
 use std::process::{Command, Stdio};
 
 use crate::TestArgs;
 
 pub fn test_project(args: TestArgs) -> anyhow::Result<()> {
+    verify_steel_workspace()?;
     let mut command = Command::new("cargo");
-        command.arg("test-sbf");
+    command.arg("test-sbf");
 
-        if args.nocapture {
-            command.arg("--").arg("--nocapture");
-        }
+    if args.nocapture {
+        command.arg("--").arg("--nocapture");
+    }
 
-        command
+    command
         .stdout(Stdio::inherit())
         .stderr(Stdio::inherit())
         .status()
