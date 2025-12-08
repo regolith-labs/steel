@@ -29,7 +29,12 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.137"
 solana-clap-v3-utils = "^2.1"
 solana-cli-config = "^2.1"
-solana-program = "^2.1"
+solana-address = { version = "2.0", features = ["decode", "curve25519"] }
+solana-account-view = "1.0"
+solana-program-error = "3.0"
+solana-instruction-view = { version = "1.0.0", features = ["cpi"] }
+pinocchio-system = "0.4.0"
+# solana-program = "^2.1"
 solana-sdk = "^2.1"
 spl-token = { features = ["no-entrypoint"], version = "^4" }
 spl-token-2022 = { features = ["no-entrypoint"], version = "^7" }
