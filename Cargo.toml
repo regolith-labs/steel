@@ -33,7 +33,10 @@ solana-address = { version = "2.0", features = ["decode", "curve25519"] }
 solana-account-view = "1.0"
 solana-program-error = "3.0"
 solana-instruction-view = { version = "1.0.0", features = ["cpi"] }
+pinocchio = "0.9.2"
+pinocchio-log = "0.4.0"
 pinocchio-system = "0.4.0"
+pinocchio-pubkey = "0.3.0"
 # solana-program = "^2.1"
 solana-sdk = "^2.1"
 spl-token = { features = ["no-entrypoint"], version = "^4" }
@@ -43,4 +46,3 @@ thiserror = "1.0.57"
 tokio = "1.35"
 toml = "0.8.19"
 quote = "1.0"
-

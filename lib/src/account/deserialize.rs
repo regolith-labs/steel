@@ -1,5 +1,5 @@
 use bytemuck::Pod;
-use solana_program_error::ProgramError;
+use pinocchio::program_error::ProgramError;
 pub trait Discriminator {
     fn discriminator() -> u8;
 }
@@ -15,18 +15,20 @@ where
 {
     fn try_from_bytes(data: &[u8]) -> Result<&Self, ProgramError> {
         if Self::discriminator().ne(&data[0]) {
-            return Err(solana_program_error::ProgramError::InvalidAccountData);
+            return Err(pinocchio::program_error::ProgramError::InvalidAccountData);
         }
-        bytemuck::try_from_bytes::<Self>(&data[8..])
-            .or(Err(solana_program_error::ProgramError::InvalidAccountData))
+        bytemuck::try_from_bytes::<Self>(&data[8..]).or(Err(
+            pinocchio::program_error::ProgramError::InvalidAccountData,
+        ))
     }
 
     fn try_from_bytes_mut(data: &mut [u8]) -> Result<&mut Self, ProgramError> {
         if Self::discriminator().ne(&data[0]) {
-            return Err(solana_program_error::ProgramError::InvalidAccountData);
+            return Err(pinocchio::program_error::ProgramError::InvalidAccountData);
         }
-        bytemuck::try_from_bytes_mut::<Self>(&mut data[8..])
-            .or(Err(solana_program_error::ProgramError::InvalidAccountData))
+        bytemuck::try_from_bytes_mut::<Self>(&mut data[8..]).or(Err(
+            pinocchio::program_error::ProgramError::InvalidAccountData,
+        ))
     }
 }
 
@@ -47,12 +49,13 @@ where
 {
     fn try_header_from_bytes(data: &[u8]) -> Result<(&Self, &[u8]), ProgramError> {
         if Self::discriminator().ne(&data[0]) {
-            return Err(solana_program_error::ProgramError::InvalidAccountData);
+            return Err(pinocchio::program_error::ProgramError::InvalidAccountData);
         }
         let (prefix, remainder) = data[8..].split_at(std::mem::size_of::<T>());
         Ok((
-            bytemuck::try_from_bytes::<Self>(prefix)
-                .or(Err(solana_program_error::ProgramError::InvalidAccountData))?,
+            bytemuck::try_from_bytes::<Self>(prefix).or(Err(
+                pinocchio::program_error::ProgramError::InvalidAccountData,
+            ))?,
             remainder,
         ))
     }
@@ -60,8 +63,9 @@ where
     fn try_header_from_bytes_mut(data: &mut [u8]) -> Result<(&mut Self, &mut [u8]), ProgramError> {
         let (prefix, remainder) = data[8..].split_at_mut(std::mem::size_of::<T>());
         Ok((
-            bytemuck::try_from_bytes_mut::<Self>(prefix)
-                .or(Err(solana_program_error::ProgramError::InvalidAccountData))?,
+            bytemuck::try_from_bytes_mut::<Self>(prefix).or(Err(
+                pinocchio::program_error::ProgramError::InvalidAccountData,
+            ))?,
             remainder,
         ))
     }

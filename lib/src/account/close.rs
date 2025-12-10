@@ -1,7 +1,6 @@
 use solana_account_view::AccountView;
 use solana_address::address;
 use solana_program_error::ProgramError;
-// use solana_program::{account_info::AccountInfo, program_error::ProgramError, system_program};
 
 pub trait CloseAccount {
     fn close(&self, to: &AccountView) -> Result<(), ProgramError>;
