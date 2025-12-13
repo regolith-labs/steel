@@ -1,20 +1,25 @@
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, system_program};
+use solana_account_view::AccountView;
+use solana_address::address;
+use solana_program_error::ProgramError;
 
-pub trait CloseAccount<'info> {
-    fn close(&self, to: &AccountInfo<'info>) -> Result<(), ProgramError>;
+pub trait CloseAccount {
+    fn close(&self, to: &AccountView) -> Result<(), ProgramError>;
 }
 
-impl<'info> CloseAccount<'info> for AccountInfo<'info> {
-    fn close(&self, to: &AccountInfo<'info>) -> Result<(), ProgramError> {
+impl CloseAccount for AccountView {
+    fn close(&self, to: &AccountView) -> Result<(), ProgramError> {
         // Return rent lamports.
-        **to.lamports.borrow_mut() += self.lamports();
-        **self.lamports.borrow_mut() = 0;
+        to.set_lamports(to.lamports() + self.lamports());
+        self.set_lamports(0);
 
         // Assign system program as the owner
-        self.assign(&system_program::ID);
+        unsafe {
+            // self.assign(&system_program::ID);
+            self.assign(&address!("11111111111111111111111111111111"));
+        }
 
         // Realloc data to zero.
-        self.realloc(0, true)?;
+        self.resize(0)?;
 
         Ok(())
     }

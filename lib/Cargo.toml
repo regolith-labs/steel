@@ -19,9 +19,17 @@ bytemuck.workspace = true
 fixed.workspace = true
 num_enum.workspace = true
 serde.workspace = true
-solana-program.workspace = true
+# solana-program.workspace = true
+solana-address.workspace = true
+solana-account-view.workspace = true
+solana-program-error.workspace = true
+solana-instruction-view.workspace = true
 spl-token = { workspace = true, optional = true }
 spl-token-2022 = { workspace = true, optional = true }
 spl-associated-token-account = { workspace = true, optional = true }
 thiserror.workspace = true
 
+pinocchio.workspace = true
+pinocchio-log.workspace = true
+pinocchio-system.workspace = true
+pinocchio-pubkey.workspace = true
