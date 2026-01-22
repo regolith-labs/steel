@@ -1,17 +1,13 @@
-#![allow(deprecated)]
 use bytemuck::Pod;
 
-use pinocchio::sysvars::rent::{
-    Rent, DEFAULT_BURN_PERCENT, DEFAULT_EXEMPTION_THRESHOLD, DEFAULT_LAMPORTS_PER_BYTE_YEAR,
-};
+use pinocchio::cpi;
+use pinocchio::sysvars::rent::Rent;
+use pinocchio::sysvars::Sysvar;
 use pinocchio::{
-    account_info::AccountInfo,
-    instruction::{Instruction, Seed, Signer},
-    pubkey::Pubkey,
-    ProgramResult,
+    cpi::{Seed, Signer},
+    instruction::InstructionView,
+    AccountView, Address, ProgramResult,
 };
-
-// TODO: remove with bump funcs?
 
 // use crate::{CloseAccount};
 use crate::Discriminator;
@@ -19,42 +15,75 @@ use crate::Discriminator;
 /// Invokes a CPI with provided signer seeds and program id.
 #[inline(always)]
 pub fn invoke_signed<const N: usize, const ACCOUNTS: usize>(
-    instruction: &Instruction,
-    account_infos: &[&AccountInfo; ACCOUNTS],
+    instruction: &InstructionView,
+    account_views: &[&AccountView; ACCOUNTS],
     seeds: &[Seed; N],
 ) -> ProgramResult {
-    invoke_signed_with_bump(instruction, account_infos, seeds)
+    let signers_seeds = Signer::from(seeds);
+
+    cpi::invoke_signed(instruction, account_views, &[signers_seeds])
 }
+
+// #[inline(always)]
+// pub fn invoke_signed_with_bump<const N: usize, const ACCOUNTS: usize>(
+//     instruction: &Instruction,
+//     account_infos: &[&AccountInfo; ACCOUNTS],
+//     seeds: &[&[u8]; N],
+//     bump: &[u8],
+// ) -> ProgramResult {
+//     // Create a buffer large enough for any reasonable PDA (max 16 seeds)
+//     let mut all_seeds: [&[u8]; 16] = [&[]; 16];
+
+//     // Copy input seeds
+//     all_seeds[..N].copy_from_slice(seeds);
+
+//     // Append bump
+//     all_seeds[N] = bump;
+
+//     // Use only the slice we need (N + 1 elements)
+//     pinocchio::cpi::invoke_signed(instruction, account_infos, &[&all_seeds[..N + 1]])
+// }
 
 /// Invokes a CPI with the provided signer seeds and bump.
-#[inline(always)]
-pub fn invoke_signed_with_bump<const N: usize, const ACCOUNTS: usize>(
-    instruction: &Instruction,
-    account_infos: &[&AccountInfo; ACCOUNTS],
-    seeds: &[Seed; N],
-) -> ProgramResult {
-    // Combine seeds
-    let signer_seeds = Signer::from(seeds);
+// #[inline(always)]
+// pub fn invoke_signed_with_bump<const N: usize, const ACCOUNTS: usize>(
+//     instruction: &Instruction,
+//     account_infos: &[&AccountInfo; ACCOUNTS],
+//     seeds: &[&[u8]],
+//     bump: &[u8],
+// ) -> ProgramResult {
+//     let len = seeds.len();
+//     let mut res;
 
-    // Invoke CPI
-    pinocchio::cpi::invoke_signed(instruction, account_infos, &[signer_seeds])
-}
+//     for (i, e) in seeds.iter().enumerate() {
+//         res = [
+//             Seed::from(seeds[i]),
+//             Seed::from(seeds[i + 1]),
+//             Seed::from(seeds[i + 2]),
+//         ];
+//     }
+
+//     // if seeds.len == 3
+//     //
+
+//     // Combine seeds
+//     let signer_seeds = Signer::from(seeds);
+
+//     // Invoke CPI
+//     pinocchio::cpi::invoke_signed(instruction, account_infos, &[signer_seeds])
+// }
 
 /// Creates a new account.
 #[inline(always)]
 pub fn create_account<'a, 'info>(
-    from: &'a AccountInfo,
-    to: &'a AccountInfo,
+    from: &'a AccountView,
+    to: &'a AccountView,
     space: usize,
-    owner: &Pubkey,
+    owner: &Address,
 ) -> ProgramResult {
-    let rent = Rent {
-        lamports_per_byte_year: DEFAULT_LAMPORTS_PER_BYTE_YEAR,
-        exemption_threshold: DEFAULT_EXEMPTION_THRESHOLD,
-        burn_percent: DEFAULT_BURN_PERCENT,
-    };
+    let rent = Rent::get()?;
 
-    let lamports_required = rent.minimum_balance(space);
+    let lamports_required = rent.try_minimum_balance(space)?;
 
     pinocchio_system::instructions::CreateAccount {
         from,
@@ -68,12 +97,20 @@ pub fn create_account<'a, 'info>(
     Ok(())
 }
 
+// fn append<const M: usize,const N: usize, T: Copy>(arr: [T; N], elem: T) -> [T; M] {
+
+//     let mut result = [elem; M];
+//     result[..N].copy_from_slice(&arr);
+//     result[N] = elem;
+//     result
+// }
+
 /// Creates a new program account.
 #[inline(always)]
 pub fn create_program_account<'a, 'info, T: Discriminator + Pod, const N: usize>(
-    target_account: &'a AccountInfo,
-    payer: &'a AccountInfo,
-    owner: &Pubkey,
+    target_account: &'a AccountView,
+    payer: &'a AccountView,
+    owner: &Address,
     seeds: &[Seed; N],
 ) -> ProgramResult {
     create_program_account_with_bump::<T, N>(target_account, payer, owner, seeds)
@@ -82,9 +119,9 @@ pub fn create_program_account<'a, 'info, T: Discriminator + Pod, const N: usize>
 /// Creates a new program account with user-provided bump.
 #[inline(always)]
 pub fn create_program_account_with_bump<'a, 'info, T: Discriminator + Pod, const N: usize>(
-    target_account: &'a AccountInfo,
-    payer: &'a AccountInfo,
-    owner: &Pubkey,
+    target_account: &'a AccountView,
+    payer: &'a AccountView,
+    owner: &Address,
     seeds: &[Seed; N],
 ) -> ProgramResult {
     // Allocate space.
@@ -97,7 +134,7 @@ pub fn create_program_account_with_bump<'a, 'info, T: Discriminator + Pod, const
     )?;
 
     // Set discriminator.
-    let mut data = target_account.try_borrow_mut_data()?;
+    let mut data = target_account.try_borrow_mut()?;
     data.copy_from_slice(&T::discriminator().to_le_bytes());
 
     Ok(())
@@ -106,10 +143,10 @@ pub fn create_program_account_with_bump<'a, 'info, T: Discriminator + Pod, const
 /// Allocates space for a new program account.
 #[inline(always)]
 pub fn allocate_account<'a, 'info, const N: usize>(
-    target_account: &'a AccountInfo,
-    payer: &'a AccountInfo,
+    target_account: &'a AccountView,
+    payer: &'a AccountView,
     space: usize,
-    owner: &Pubkey,
+    owner: &Address,
     seeds: &[Seed; N],
 ) -> ProgramResult {
     allocate_account_with_bump(target_account, payer, space, owner, seeds)
@@ -118,27 +155,24 @@ pub fn allocate_account<'a, 'info, const N: usize>(
 /// Allocates space for a new program account with user-provided bump.
 #[inline(always)]
 pub fn allocate_account_with_bump<'a, 'info, const N: usize>(
-    target_account: &'a AccountInfo,
-    payer: &'a AccountInfo,
+    target_account: &'a AccountView,
+    payer: &'a AccountView,
     space: usize,
-    owner: &Pubkey,
+    owner: &Address,
     seeds: &[Seed; N],
 ) -> ProgramResult {
     let signer_seeds = Signer::from(seeds);
 
     // Allocate space for account
-    let rent = Rent {
-        lamports_per_byte_year: DEFAULT_LAMPORTS_PER_BYTE_YEAR,
-        exemption_threshold: DEFAULT_EXEMPTION_THRESHOLD,
-        burn_percent: DEFAULT_BURN_PERCENT,
-    };
+    let rent = Rent::get()?;
+
     if target_account.lamports().eq(&0) {
         // If balance is zero, create account
 
         pinocchio_system::instructions::CreateAccount {
             from: payer,
             to: target_account,
-            lamports: rent.minimum_balance(space),
+            lamports: rent.try_minimum_balance(space)?,
             space: space as u64,
             owner,
         }
@@ -148,7 +182,7 @@ pub fn allocate_account_with_bump<'a, 'info, const N: usize>(
 
         // 1) transfer sufficient lamports for rent exemption
         let rent_exempt_balance = rent
-            .minimum_balance(space)
+            .try_minimum_balance(space)?
             .saturating_sub(target_account.lamports());
         if rent_exempt_balance.gt(&0) {
             pinocchio_system::instructions::Transfer {
@@ -180,11 +214,11 @@ pub fn allocate_account_with_bump<'a, 'info, const N: usize>(
 
 /// Closes an account and returns the remaining rent lamports to the provided recipient.
 #[inline(always)]
-pub fn close_account(account_info: &AccountInfo, recipient: &AccountInfo) -> ProgramResult {
+pub fn close_account(account_info: &AccountView, recipient: &AccountView) -> ProgramResult {
     let lamports = account_info.lamports();
 
-    *account_info.try_borrow_mut_lamports()? -= lamports;
-    *recipient.try_borrow_mut_lamports()? += lamports;
+    account_info.set_lamports(lamports - lamports);
+    recipient.set_lamports(recipient.lamports() + lamports);
 
     account_info.close()
 }
