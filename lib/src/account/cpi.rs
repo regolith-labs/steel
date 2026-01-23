@@ -24,55 +24,6 @@ pub fn invoke_signed<const N: usize, const ACCOUNTS: usize>(
     cpi::invoke_signed(instruction, account_views, &[signers_seeds])
 }
 
-// #[inline(always)]
-// pub fn invoke_signed_with_bump<const N: usize, const ACCOUNTS: usize>(
-//     instruction: &Instruction,
-//     account_infos: &[&AccountInfo; ACCOUNTS],
-//     seeds: &[&[u8]; N],
-//     bump: &[u8],
-// ) -> ProgramResult {
-//     // Create a buffer large enough for any reasonable PDA (max 16 seeds)
-//     let mut all_seeds: [&[u8]; 16] = [&[]; 16];
-
-//     // Copy input seeds
-//     all_seeds[..N].copy_from_slice(seeds);
-
-//     // Append bump
-//     all_seeds[N] = bump;
-
-//     // Use only the slice we need (N + 1 elements)
-//     pinocchio::cpi::invoke_signed(instruction, account_infos, &[&all_seeds[..N + 1]])
-// }
-
-/// Invokes a CPI with the provided signer seeds and bump.
-// #[inline(always)]
-// pub fn invoke_signed_with_bump<const N: usize, const ACCOUNTS: usize>(
-//     instruction: &Instruction,
-//     account_infos: &[&AccountInfo; ACCOUNTS],
-//     seeds: &[&[u8]],
-//     bump: &[u8],
-// ) -> ProgramResult {
-//     let len = seeds.len();
-//     let mut res;
-
-//     for (i, e) in seeds.iter().enumerate() {
-//         res = [
-//             Seed::from(seeds[i]),
-//             Seed::from(seeds[i + 1]),
-//             Seed::from(seeds[i + 2]),
-//         ];
-//     }
-
-//     // if seeds.len == 3
-//     //
-
-//     // Combine seeds
-//     let signer_seeds = Signer::from(seeds);
-
-//     // Invoke CPI
-//     pinocchio::cpi::invoke_signed(instruction, account_infos, &[signer_seeds])
-// }
-
 /// Creates a new account.
 #[inline(always)]
 pub fn create_account<'a, 'info>(
@@ -96,14 +47,6 @@ pub fn create_account<'a, 'info>(
 
     Ok(())
 }
-
-// fn append<const M: usize,const N: usize, T: Copy>(arr: [T; N], elem: T) -> [T; M] {
-
-//     let mut result = [elem; M];
-//     result[..N].copy_from_slice(&arr);
-//     result[N] = elem;
-//     result
-// }
 
 /// Creates a new program account.
 #[inline(always)]

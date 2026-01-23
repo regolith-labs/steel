@@ -1,16 +1,17 @@
-use solana_program::program_error::ProgramError;
+use pinocchio::error::ProgramError;
+use pinocchio_log::log;
 
 /// Logs a message.
 #[inline(always)]
-pub fn log(msg: String) {
-    solana_program::log::sol_log(msg.as_str());
+pub fn log(msg: &str) {
+    log!("{}", msg);
 }
 
 /// Logs the call trace and returns the error.
 #[track_caller]
 pub fn trace(msg: &str, error: ProgramError) -> ProgramError {
     let caller = std::panic::Location::caller();
-    log(format!("{}: {}", msg, caller));
+    log(&format!("{}: {}", msg, caller));
     error
 }
 

@@ -1,5 +1,4 @@
 use bytemuck::Pod;
-// use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
 use solana_account_view::AccountView;
 use solana_address::Address;
 use solana_program_error::ProgramError;
@@ -7,6 +6,12 @@ use solana_program_error::ProgramError;
 use crate::trace;
 
 use super::{AccountDeserialize, Discriminator};
+
+/// `Sysvar1111111111111111111111111111111111111`
+pub const SYSVAR_ID: Address = Address::new_from_array([
+    6, 167, 213, 23, 24, 117, 247, 41, 199, 61, 147, 64, 143, 33, 97, 32, 6, 126, 216, 140, 118,
+    224, 140, 40, 127, 193, 148, 96, 0, 0, 0, 0,
+]);
 
 pub trait AccountInfoValidation {
     fn is_signer(&self) -> Result<&Self, ProgramError>;
@@ -62,8 +67,7 @@ impl AccountInfoValidation for AccountView {
 
     #[track_caller]
     fn is_sysvar(&self, sysvar_id: &Address) -> Result<&Self, ProgramError> {
-        self.has_owner(&solana_program::sysvar::ID)?
-            .has_address(sysvar_id)
+        self.has_owner(&SYSVAR_ID)?.has_address(sysvar_id)
     }
 
     #[track_caller]
@@ -107,17 +111,18 @@ impl AccountInfoValidation for AccountView {
 
     #[track_caller]
     fn has_owner(&self, owner: &Address) -> Result<&Self, ProgramError> {
-        if unsafe { self.owner() }.ne(owner) {
+        if self.owned_by(owner) {
             return Err(trace(
                 format!(
                     "Account has invalid owner {} != {}",
-                    unsafe { *self.owner() },
+                    unsafe { self.owner() },
                     owner
                 )
                 .as_str(),
                 ProgramError::InvalidAccountOwner,
             ));
         }
+
         Ok(self)
     }
 
@@ -188,7 +193,7 @@ impl AsAccount for AccountView {
             self.has_owner(program_id)?;
 
             // Validate account data length.
-            let mut data = self.borrow_unchecked_mut();
+            let data = self.borrow_unchecked_mut();
             let expected_len = 8 + std::mem::size_of::<T>();
             if data.len() != expected_len {
                 return Err(trace(
