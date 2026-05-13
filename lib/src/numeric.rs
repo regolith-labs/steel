@@ -21,6 +21,11 @@ impl Numeric {
         bits: I80F48::ZERO.to_bits().to_le_bytes(),
     };
 
+    /// The one value.
+    pub const ONE: Self = Numeric {
+        bits: I80F48::ONE.to_bits().to_le_bytes(),
+    };
+
     /// Creates a new `Numeric` from a `u64`.
     pub fn from_u64(value: u64) -> Self {
         let i = I80F48::from_num(value);
@@ -32,15 +37,15 @@ impl Numeric {
         self.floor().to_i80f48().to_num::<u64>()
     }
 
-    /// Creates a new `Numeric` from a fraction.
-    pub fn from_fraction(numerator: u64, denominator: u64) -> Self {
-        let f = I80F48::from_num(numerator) / I80F48::from_num(denominator);
-        Self::from_i80f48(f)
+    /// Creates a new `Numeric` from a `i64`.
+    pub fn from_i64(value: i64) -> Self {
+        let i = I80F48::from_num(value);
+        Self::from_i80f48(i)
     }
 
-    /// Returns the floor of the `Numeric`.
-    pub fn floor(&self) -> Self {
-        Self::from_i80f48(self.to_i80f48().floor())
+    /// Returns the `Numeric` as a `i64`.
+    pub fn to_i64(&self) -> i64 {
+        self.floor().to_i80f48().to_num::<i64>()
     }
 
     /// Creates a new `Numeric` from an `I80F48`.
@@ -55,9 +60,40 @@ impl Numeric {
         I80F48::from_bits(i128::from_le_bytes(self.bits))
     }
 
+    /// Creates a new `Numeric` from a fraction.
+    pub fn from_fraction(numerator: u64, denominator: u64) -> Self {
+        let f = I80F48::from_num(numerator) / I80F48::from_num(denominator);
+        Self::from_i80f48(f)
+    }
+
+    /// Returns the ceiling of the `Numeric`.
+    pub fn ceil(&self) -> Self {
+        Self::from_i80f48(self.to_i80f48().ceil())
+    }
+
+    /// Returns the floor of the `Numeric`.
+    pub fn floor(&self) -> Self {
+        Self::from_i80f48(self.to_i80f48().floor())
+    }
+
+    /// Returns the absolute value of the `Numeric`.
+    pub fn abs(&self) -> Self {
+        Self::from_i80f48(self.to_i80f48().abs())
+    }
+
     /// Returns the square root of the `Numeric`.
     pub fn sqrt(&self) -> Self {
         Self::from_i80f48(self.to_i80f48().sqrt())
+    }
+
+    /// Returns true if the `Numeric` is negative.
+    pub fn is_negative(&self) -> bool {
+        self.to_i80f48().is_negative()
+    }
+
+    /// Returns true if the `Numeric` is positive.
+    pub fn is_positive(&self) -> bool {
+        self.to_i80f48().is_positive()
     }
 }
 
