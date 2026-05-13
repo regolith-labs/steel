@@ -54,6 +54,11 @@ impl Numeric {
     pub fn to_i80f48(&self) -> I80F48 {
         I80F48::from_bits(i128::from_le_bytes(self.bits))
     }
+
+    /// Returns the square root of the `Numeric`.
+    pub fn sqrt(&self) -> Self {
+        Self::from_i80f48(self.to_i80f48().sqrt())
+    }
 }
 
 impl Add for Numeric {
