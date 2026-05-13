@@ -40,6 +40,10 @@ macro_rules! account {
     ($discriminator_name:ident, $struct_name:ident) => {
         $crate::impl_to_bytes!($struct_name);
 
+        impl $struct_name {
+            pub const SIZE: usize = 8 + std::mem::size_of::<Self>();
+        }
+
         impl $crate::Discriminator for $struct_name {
             fn discriminator() -> u8 {
                 $discriminator_name::$struct_name.into()
