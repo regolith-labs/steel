@@ -1,27 +1,35 @@
 use bytemuck::Pod;
-use solana_program::{account_info::AccountInfo, program_error::ProgramError, pubkey::Pubkey};
+use solana_account_view::AccountView;
+use solana_address::Address;
+use solana_program_error::ProgramError;
 
 use crate::trace;
 
 use super::{AccountDeserialize, Discriminator};
+
+/// `Sysvar1111111111111111111111111111111111111`
+pub const SYSVAR_ID: Address = Address::new_from_array([
+    6, 167, 213, 23, 24, 117, 247, 41, 199, 61, 147, 64, 143, 33, 97, 32, 6, 126, 216, 140, 118,
+    224, 140, 40, 127, 193, 148, 96, 0, 0, 0, 0,
+]);
 
 pub trait AccountInfoValidation {
     fn is_signer(&self) -> Result<&Self, ProgramError>;
     fn is_writable(&self) -> Result<&Self, ProgramError>;
     fn is_executable(&self) -> Result<&Self, ProgramError>;
     fn is_empty(&self) -> Result<&Self, ProgramError>;
-    fn is_type<T: Discriminator>(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError>;
-    fn has_owner(&self, program_id: &Pubkey) -> Result<&Self, ProgramError>;
-    fn has_seeds(&self, seeds: &[&[u8]], program_id: &Pubkey) -> Result<&Self, ProgramError>;
+    fn is_type<T: Discriminator>(&self, program_id: &Address) -> Result<&Self, ProgramError>;
+    fn is_program(&self, program_id: &Address) -> Result<&Self, ProgramError>;
+    fn is_sysvar(&self, sysvar_id: &Address) -> Result<&Self, ProgramError>;
+    fn has_address(&self, address: &Address) -> Result<&Self, ProgramError>;
+    fn has_owner(&self, program_id: &Address) -> Result<&Self, ProgramError>;
+    fn has_seeds(&self, seeds: &[&[u8]], program_id: &Address) -> Result<&Self, ProgramError>;
 }
 
-impl AccountInfoValidation for AccountInfo<'_> {
+impl AccountInfoValidation for AccountView {
     #[track_caller]
     fn is_empty(&self) -> Result<&Self, ProgramError> {
-        if !self.data_is_empty() {
+        if !self.is_data_empty() {
             return Err(trace(
                 "Account already initialized",
                 ProgramError::AccountAlreadyInitialized,
@@ -32,7 +40,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
 
     #[track_caller]
     fn is_executable(&self) -> Result<&Self, ProgramError> {
-        if !self.executable {
+        if !self.executable() {
             return Err(trace(
                 "Account is not executable",
                 ProgramError::InvalidAccountData,
@@ -42,13 +50,13 @@ impl AccountInfoValidation for AccountInfo<'_> {
     }
 
     #[track_caller]
-    fn is_program(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
+    fn is_program(&self, program_id: &Address) -> Result<&Self, ProgramError> {
         self.has_address(program_id)?.is_executable()
     }
 
     #[track_caller]
     fn is_signer(&self) -> Result<&Self, ProgramError> {
-        if !self.is_signer {
+        if !self.is_signer() {
             return Err(trace(
                 "Account is not a signer",
                 ProgramError::MissingRequiredSignature,
@@ -58,15 +66,14 @@ impl AccountInfoValidation for AccountInfo<'_> {
     }
 
     #[track_caller]
-    fn is_sysvar(&self, sysvar_id: &Pubkey) -> Result<&Self, ProgramError> {
-        self.has_owner(&solana_program::sysvar::ID)?
-            .has_address(sysvar_id)
+    fn is_sysvar(&self, sysvar_id: &Address) -> Result<&Self, ProgramError> {
+        self.has_owner(&SYSVAR_ID)?.has_address(sysvar_id)
     }
 
     #[track_caller]
-    fn is_type<T: Discriminator>(&self, program_id: &Pubkey) -> Result<&Self, ProgramError> {
+    fn is_type<T: Discriminator>(&self, program_id: &Address) -> Result<&Self, ProgramError> {
         self.has_owner(program_id)?;
-        if self.try_borrow_data()?[0].ne(&T::discriminator()) {
+        if unsafe { self.borrow_unchecked()[0] }.ne(&T::discriminator()) {
             return Err(trace(
                 format!("Account is not of type {}", T::discriminator()).as_str(),
                 ProgramError::InvalidAccountData,
@@ -77,7 +84,7 @@ impl AccountInfoValidation for AccountInfo<'_> {
 
     #[track_caller]
     fn is_writable(&self) -> Result<&Self, ProgramError> {
-        if !self.is_writable {
+        if !self.is_writable() {
             return Err(trace(
                 "Account is not writable",
                 ProgramError::MissingRequiredSignature,
@@ -87,10 +94,15 @@ impl AccountInfoValidation for AccountInfo<'_> {
     }
 
     #[track_caller]
-    fn has_address(&self, address: &Pubkey) -> Result<&Self, ProgramError> {
-        if self.key.ne(&address) {
+    fn has_address(&self, address: &Address) -> Result<&Self, ProgramError> {
+        if self.address().ne(address) {
             return Err(trace(
-                format!("Account has invalid address {} != {}", self.key, address).as_str(),
+                format!(
+                    "Account has invalid address {} != {}",
+                    self.address(),
+                    address
+                )
+                .as_str(),
                 ProgramError::InvalidAccountData,
             ));
         }
@@ -98,22 +110,28 @@ impl AccountInfoValidation for AccountInfo<'_> {
     }
 
     #[track_caller]
-    fn has_owner(&self, owner: &Pubkey) -> Result<&Self, ProgramError> {
-        if self.owner.ne(owner) {
+    fn has_owner(&self, owner: &Address) -> Result<&Self, ProgramError> {
+        if self.owned_by(owner) {
             return Err(trace(
-                format!("Account has invalid owner {} != {}", self.owner, owner).as_str(),
+                format!(
+                    "Account has invalid owner {} != {}",
+                    unsafe { self.owner() },
+                    owner
+                )
+                .as_str(),
                 ProgramError::InvalidAccountOwner,
             ));
         }
+
         Ok(self)
     }
 
     #[track_caller]
-    fn has_seeds(&self, seeds: &[&[u8]], program_id: &Pubkey) -> Result<&Self, ProgramError> {
-        let pda = Pubkey::find_program_address(seeds, program_id);
-        if self.key.ne(&pda.0) {
+    fn has_seeds(&self, seeds: &[&[u8]], program_id: &Address) -> Result<&Self, ProgramError> {
+        let pda = Address::find_program_address(seeds, program_id);
+        if self.address().ne(&pda.0) {
             return Err(trace(
-                format!("Account has invalid seeds {} != {}", self.key, pda.0).as_str(),
+                format!("Account has invalid seeds {} != {}", self.address(), pda.0).as_str(),
                 ProgramError::InvalidSeeds,
             ));
         }
@@ -126,18 +144,18 @@ impl AccountInfoValidation for AccountInfo<'_> {
 /// 2. Discriminator byte check
 /// 3. Checked bytemuck conversion of account data to &T or &mut T.
 pub trait AsAccount {
-    fn as_account<T>(&self, program_id: &Pubkey) -> Result<&T, ProgramError>
+    fn as_account<T>(&self, program_id: &Address) -> Result<&T, ProgramError>
     where
         T: AccountDeserialize + Discriminator + Pod;
 
-    fn as_account_mut<T>(&self, program_id: &Pubkey) -> Result<&mut T, ProgramError>
+    fn as_account_mut<T>(&self, program_id: &Address) -> Result<&mut T, ProgramError>
     where
         T: AccountDeserialize + Discriminator + Pod;
 }
 
-impl AsAccount for AccountInfo<'_> {
+impl AsAccount for AccountView {
     #[track_caller]
-    fn as_account<T>(&self, program_id: &Pubkey) -> Result<&T, ProgramError>
+    fn as_account<T>(&self, program_id: &Address) -> Result<&T, ProgramError>
     where
         T: AccountDeserialize + Discriminator + Pod,
     {
@@ -146,7 +164,7 @@ impl AsAccount for AccountInfo<'_> {
             self.has_owner(program_id)?;
 
             // Validate account data length.
-            let data = self.try_borrow_data()?;
+            let data = self.borrow_unchecked();
             let expected_len = 8 + std::mem::size_of::<T>();
             if data.len() != expected_len {
                 return Err(trace(
@@ -166,7 +184,7 @@ impl AsAccount for AccountInfo<'_> {
     }
 
     #[track_caller]
-    fn as_account_mut<T>(&self, program_id: &Pubkey) -> Result<&mut T, ProgramError>
+    fn as_account_mut<T>(&self, program_id: &Address) -> Result<&mut T, ProgramError>
     where
         T: AccountDeserialize + Discriminator + Pod,
     {
@@ -175,7 +193,7 @@ impl AsAccount for AccountInfo<'_> {
             self.has_owner(program_id)?;
 
             // Validate account data length.
-            let mut data = self.try_borrow_mut_data()?;
+            let data = self.borrow_unchecked_mut();
             let expected_len = 8 + std::mem::size_of::<T>();
             if data.len() != expected_len {
                 return Err(trace(

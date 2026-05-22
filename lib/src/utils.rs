@@ -1,9 +1,10 @@
-use solana_program::{program_error::ProgramError, pubkey::Pubkey};
+use solana_address::Address;
+use solana_program_error::ProgramError;
 
 /// Parses an instruction from the instruction data.
 pub fn parse_instruction<'a, T: std::convert::TryFrom<u8>>(
-    api_id: &'a Pubkey,
-    program_id: &'a Pubkey,
+    api_id: &Address,
+    program_id: &Address,
     data: &'a [u8],
 ) -> Result<(T, &'a [u8]), ProgramError> {
     // Validate the program id is valid.
