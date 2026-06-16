@@ -95,19 +95,6 @@ pub fn create_program_account_with_bump<'a, 'info, T: Discriminator + Pod>(
     seeds: &[&[u8]],
     bump: u8,
 ) -> ProgramResult {
-    // Validate seeds.
-    let pda = Pubkey::find_program_address(seeds, owner);
-    if target_account.key.ne(&pda.0) {
-        return Err(trace(
-            format!(
-                "Account has invalid seeds {} != {}",
-                target_account.key, pda.0
-            )
-            .as_str(),
-            ProgramError::InvalidSeeds,
-        ));
-    }
-
     // Allocate space.
     allocate_account_with_bump(
         target_account,
@@ -158,6 +145,19 @@ pub fn allocate_account_with_bump<'a, 'info>(
     seeds: &[&[u8]],
     bump: u8,
 ) -> ProgramResult {
+    // Validate seeds.
+    let pda = Pubkey::find_program_address(seeds, owner);
+    if target_account.key.ne(&pda.0) {
+        return Err(trace(
+            format!(
+                "Account has invalid seeds {} != {}",
+                target_account.key, pda.0
+            )
+            .as_str(),
+            ProgramError::InvalidSeeds,
+        ));
+    }
+
     // Combine seeds
     let bump: &[u8] = &[bump];
     let mut combined_seeds = Vec::with_capacity(seeds.len() + 1);
