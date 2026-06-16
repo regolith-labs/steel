@@ -1,10 +1,10 @@
 use bytemuck::Pod;
 use solana_program::{
-    account_info::AccountInfo, entrypoint::ProgramResult, instruction::Instruction, pubkey::Pubkey,
-    rent::Rent, sysvar::Sysvar,
+    account_info::AccountInfo, entrypoint::ProgramResult, instruction::Instruction,
+    program_error::ProgramError, pubkey::Pubkey, rent::Rent, sysvar::Sysvar,
 };
 
-use crate::{CloseAccount, Discriminator};
+use crate::{trace, CloseAccount, Discriminator};
 
 /// Invokes a CPI with provided signer seeds and program id.
 #[inline(always)]
@@ -95,6 +95,19 @@ pub fn create_program_account_with_bump<'a, 'info, T: Discriminator + Pod>(
     seeds: &[&[u8]],
     bump: u8,
 ) -> ProgramResult {
+    // Validate seeds.
+    let pda = Pubkey::find_program_address(seeds, owner);
+    if target_account.key.ne(&pda.0) {
+        return Err(trace(
+            format!(
+                "Account has invalid seeds {} != {}",
+                target_account.key, pda.0
+            )
+            .as_str(),
+            ProgramError::InvalidSeeds,
+        ));
+    }
+
     // Allocate space.
     allocate_account_with_bump(
         target_account,
