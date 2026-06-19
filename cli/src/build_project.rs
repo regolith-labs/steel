@@ -1,8 +1,10 @@
+use crate::workspace::*;
+use crate::BuildArgs;
 use std::process::{Command, Stdio};
 
-use crate::BuildArgs;
-
 pub fn build_project(_args: BuildArgs) -> anyhow::Result<()> {
+    verify_steel_workspace()?;
+
     Command::new("cargo")
         .arg("build-sbf")
         .stdout(Stdio::inherit())

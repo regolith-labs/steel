@@ -6,6 +6,7 @@ mod new_project;
 mod program_keys;
 mod test_project;
 mod utils;
+mod workspace;
 
 use args::*;
 use build_project::*;
